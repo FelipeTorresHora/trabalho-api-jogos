@@ -295,32 +295,32 @@ async function loadGames(searchTerm = '') {
   const gamesGrid = document.getElementById('gamesGrid');
 
   try {
-    // Preparar filtros para a API
-    const filters = {};
-
-    if (selectedCategory !== 'Todos') {
-      filters.categoria = selectedCategory;
-    }
-
-    if (searchTerm) {
-      filters.busca = searchTerm;
-    }
-
-    // Buscar jogos da API
-    const result = await GameAPI.getAll(filters);
-
     // Clear grid
     gamesGrid.innerHTML = '';
 
-    if (!result.success) {
-      showError(result.error || 'Erro ao carregar jogos');
-      return;
+    // Filtrar jogos do cache localmente (client-side)
+    let filteredGames = allGamesCache;
+
+    // Filtrar por categoria se selecionada
+    if (selectedCategory !== 'Todos') {
+      filteredGames = filteredGames.filter(jogo => {
+        const categoria = getCategoryName(jogo.fkCategoria);
+        return categoria === selectedCategory;
+      });
     }
 
-    const jogos = result.data;
+    // Filtrar por termo de busca (client-side search)
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filteredGames = filteredGames.filter(jogo => {
+        const nome = (jogo.nome || jogo.titulo || '').toLowerCase();
+        // Buscar somente no nome
+        return nome.includes(lowerSearch);
+      });
+    }
 
     // Check if no games found
-    if (!jogos || jogos.length === 0) {
+    if (!filteredGames || filteredGames.length === 0) {
       gamesGrid.innerHTML = `
         <div class="empty-state" style="grid-column: 1 / -1;">
           <div class="empty-state-icon">🎮</div>
@@ -332,7 +332,7 @@ async function loadGames(searchTerm = '') {
     }
 
     // Create game cards
-    jogos.forEach(jogo => {
+    filteredGames.forEach(jogo => {
       const card = createGameCard(jogo);
       gamesGrid.appendChild(card);
     });
