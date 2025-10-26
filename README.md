@@ -70,12 +70,12 @@ Abra `frontend/index.html` no navegador (pode ter problemas de CORS)
 A aplicação vem com usuários pré-cadastrados para teste:
 
 **Usuário comum:**
-- Email: `joao@email.com`
-- Senha: `123456`
+- Email: admin@avjd.com
+- Senha: admin123
 
 **Administrador:**
-- Email: `admin@email.com`
-- Senha: `admin123`
+- Email: cliente@avjd.com 
+- Senha: cliente123
 
 Ou registre uma nova conta na tela de cadastro.
 

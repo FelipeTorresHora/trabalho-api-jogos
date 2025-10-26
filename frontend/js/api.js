@@ -415,9 +415,15 @@ const UserAPI = {
 
   /**
    * Cria um novo usuário (apenas admin)
+   * Usa /auth/register pois POST /usuarios não existe no backend
+   * LIMITAÇÃO: Sempre cria usuário com perfil "Cliente"
    */
   async create(userData) {
-    return await API.post('/usuarios', userData);
+    return await API.post('/auth/register', {
+      nome: userData.nome,
+      email: userData.email,
+      senha: userData.senha
+    });
   },
 
   /**

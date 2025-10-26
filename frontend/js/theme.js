@@ -51,20 +51,19 @@ const ThemeManager = {
     }
   },
 
-  // Update theme button icon and text
+  // Update theme toggle switch
   updateThemeButton(themeName) {
-    const themeBtn = document.getElementById('themeToggleBtn');
-    if (!themeBtn) return;
+    const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
 
-    if (themeName === this.THEMES.CLASSIC) {
-      themeBtn.innerHTML = '🌙';
-      themeBtn.setAttribute('aria-label', 'Mudar para Dark Mode');
-      themeBtn.setAttribute('title', 'Mudar para Dark Mode');
-    } else {
-      themeBtn.innerHTML = '☀️';
-      themeBtn.setAttribute('aria-label', 'Mudar para Classic Mode');
-      themeBtn.setAttribute('title', 'Mudar para Classic Mode');
-    }
+    // Marcar checkbox se estiver em Classic Mode
+    themeToggle.checked = (themeName === this.THEMES.CLASSIC);
+
+    // Atualizar aria-label
+    const label = themeName === this.THEMES.CLASSIC
+      ? 'Mudar para Dark Mode'
+      : 'Mudar para Classic Mode';
+    themeToggle.setAttribute('aria-label', label);
   }
 };
 

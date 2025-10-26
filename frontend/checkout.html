@@ -24,7 +24,19 @@
       </nav>
 
       <div class="header-actions">
-        <button class="icon-btn" id="themeToggleBtn" onclick="ThemeManager.toggleTheme()" aria-label="Mudar tema" title="Mudar tema">☀️</button>
+        <div class="theme-toggle-container">
+          <label class="theme-toggle" for="themeToggle">
+            <span class="theme-option dark-mode">☀️</span>
+            <input
+              type="checkbox"
+              id="themeToggle"
+              aria-label="Alternar tema"
+              onclick="ThemeManager.toggleTheme()"
+            >
+            <span class="theme-slider"></span>
+            <span class="theme-option classic-mode">🌙</span>
+          </label>
+        </div>
 
         <a href="cart.html" class="icon-btn" aria-label="Carrinho">
           🛒

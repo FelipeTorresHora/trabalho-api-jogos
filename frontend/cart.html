@@ -24,12 +24,19 @@
       </nav>
 
       <div class="header-actions">
-        <div class="search-bar">
-          <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Buscar jogos...">
+        <div class="theme-toggle-container">
+          <label class="theme-toggle" for="themeToggle">
+            <span class="theme-option dark-mode">☀️</span>
+            <input
+              type="checkbox"
+              id="themeToggle"
+              aria-label="Alternar tema"
+              onclick="ThemeManager.toggleTheme()"
+            >
+            <span class="theme-slider"></span>
+            <span class="theme-option classic-mode">🌙</span>
+          </label>
         </div>
-
-        <button class="icon-btn" id="themeToggleBtn" onclick="ThemeManager.toggleTheme()" aria-label="Mudar tema" title="Mudar tema">☀️</button>
 
         <a href="cart.html" class="icon-btn active" aria-label="Carrinho">
           🛒

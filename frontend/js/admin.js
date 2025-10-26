@@ -12,6 +12,53 @@ let allGames = [];
 let allUsers = [];
 let allCompanies = [];
 
+// Category mapping (ID -> Name)
+const CATEGORIAS = {
+  1: 'Ação',
+  2: 'RPG',
+  3: 'Aventura',
+  4: 'Estratégia',
+  5: 'Esporte',
+  6: 'Corrida',
+  7: 'Terror',
+  8: 'Puzzle',
+  9: 'Simulação',
+  10: 'Plataforma',
+  11: 'Luta',
+  12: 'Tiro',
+  13: 'Musical',
+  14: 'Ação',
+  15: 'Casual'
+};
+
+// Helper function to get category name by ID
+function getCategoryName(categoryId) {
+  return CATEGORIAS[categoryId] || 'Outros';
+}
+
+// Helper function to normalize game data from backend
+function normalizeGame(jogo) {
+  if (!jogo) return null;
+
+  return {
+    id: jogo.id,
+    titulo: jogo.nome || jogo.titulo,  // Backend usa 'nome', frontend espera 'titulo'
+    nome: jogo.nome,  // Manter campo original também
+    descricao: jogo.descricao,
+    ano: jogo.ano,
+    preco: jogo.preco,
+    fkEmpresa: jogo.fkEmpresa || jogo.fk_empresa,
+    fkCategoria: jogo.fkCategoria || jogo.fk_categoria,
+    empresa_id: jogo.fkEmpresa || jogo.fk_empresa || jogo.empresa_id,
+    categoria_id: jogo.fkCategoria || jogo.fk_categoria || jogo.categoria_id,
+    categoria: getCategoryName(jogo.fkCategoria || jogo.fk_categoria),
+    empresa_nome: jogo.empresa_nome,  // Será preenchido depois
+    imagem: jogo.imagem || 'images/default.jpg',
+    destaque: jogo.destaque || false,
+    avaliacao_media: jogo.avaliacao_media || 0
+  };
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', async function() {
   initializeHeader();
@@ -52,26 +99,73 @@ async function loadDashboard() {
       allSales = salesResult.data;
     }
 
-    // Carregar jogos da API
+    // Carregar jogos da API e normalizar
     const gamesResult = await GameAPI.getAll();
     if (gamesResult.success && gamesResult.data) {
-      allGames = gamesResult.data;
+      allGames = gamesResult.data.map(jogo => normalizeGame(jogo));
     }
 
-    // Calculate top selling games usando campos do backend
+    // Carregar empresas para mapear nomes
+    const companiesResult = await CompanyAPI.getAll();
+    if (companiesResult.success && companiesResult.data) {
+      allCompanies = companiesResult.data;
+
+      // Adicionar empresa_nome aos jogos
+      allGames = allGames.map(jogo => {
+        const empresa = allCompanies.find(e => e.id === jogo.empresa_id);
+        return {
+          ...jogo,
+          empresa_nome: empresa ? empresa.nome : `Empresa ${jogo.empresa_id}`
+        };
+      });
+    }
+
+    // Buscar carrinhos finalizados para obter itens das vendas
+    const cartsResult = await CartAPI.getAll();
+    let carrinhosFinalizados = [];
+    if (cartsResult.success && cartsResult.data && cartsResult.data.carrinhosComItens) {
+      carrinhosFinalizados = cartsResult.data.carrinhosComItens.filter(c => c.status === 'F');
+    }
+
+    // Combinar vendas com itens dos carrinhos
+    const vendasComItens = allSales.map(venda => {
+      const carrinho = carrinhosFinalizados.find(c => c.fkVenda === venda.id);
+      const itens = carrinho ? (carrinho.itens || []) : [];
+
+      // Adicionar dados do jogo em cada item
+      const itensComJogo = itens.map(item => {
+        const jogo = allGames.find(g => g.id === item.fkJogo);
+        return {
+          ...item,
+          jogo_id: item.fkJogo,
+          jogo: jogo,
+          quantidade: 1,  // Backend não suporta quantidade, sempre 1
+          preco_unitario: jogo ? jogo.preco : 0
+        };
+      });
+
+      return {
+        ...venda,
+        itens: itensComJogo
+      };
+    });
+
+    allSales = vendasComItens;
+
+    // Calculate top selling games
     const gameSales = {};
     allSales.forEach(venda => {
       const itens = venda.itens || [];
       itens.forEach(item => {
         const jogoId = item.jogo_id;
-        const quantidade = item.quantidade || 0;
+        const quantidade = item.quantidade || 1;
         const precoUnitario = item.preco_unitario || 0;
 
         if (!gameSales[jogoId]) {
           const jogo = item.jogo || allGames.find(g => g.id === jogoId) || {};
           gameSales[jogoId] = {
             gameId: jogoId,
-            title: jogo.titulo || 'Desconhecido',
+            title: jogo.titulo || jogo.nome || 'Desconhecido',
             quantity: 0,
             revenue: 0
           };
@@ -100,8 +194,8 @@ async function loadDashboard() {
               revenue: 0
             };
           }
-          categorySales[categoria].quantity += item.quantidade || 0;
-          categorySales[categoria].revenue += (item.preco_unitario || 0) * (item.quantidade || 0);
+          categorySales[categoria].quantity += item.quantidade || 1;
+          categorySales[categoria].revenue += (item.preco_unitario || 0) * (item.quantidade || 1);
         }
       });
     });
@@ -116,9 +210,7 @@ async function loadDashboard() {
       itens.forEach(item => {
         const jogo = item.jogo || allGames.find(g => g.id === item.jogo_id);
         if (jogo && jogo.empresa_id) {
-          // Buscar nome da empresa (precisaria carregar empresas também)
-          const empresaId = jogo.empresa_id;
-          const empresaNome = jogo.empresa_nome || `Empresa ${empresaId}`;
+          const empresaNome = jogo.empresa_nome || `Empresa ${jogo.empresa_id}`;
 
           if (!brandSales[empresaNome]) {
             brandSales[empresaNome] = {
@@ -127,8 +219,8 @@ async function loadDashboard() {
               revenue: 0
             };
           }
-          brandSales[empresaNome].quantity += item.quantidade || 0;
-          brandSales[empresaNome].revenue += (item.preco_unitario || 0) * (item.quantidade || 0);
+          brandSales[empresaNome].quantity += item.quantidade || 1;
+          brandSales[empresaNome].revenue += (item.preco_unitario || 0) * (item.quantidade || 1);
         }
       });
     });
@@ -351,40 +443,69 @@ async function loadUsers() {
   const tbody = document.getElementById('usersTableBody');
 
   try {
-    const result = await UserAPI.getAll();
+    // Mostrar loading
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Carregando usuários...</td></tr>';
 
-    if (result.success && result.data) {
-      allUsers = result.data;
-
-      if (allUsers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum usuário encontrado</td></tr>';
-        return;
+    // Extrair IDs únicos de usuários através das vendas
+    const userIds = new Set();
+    allSales.forEach(venda => {
+      const userId = venda.fk_usuario || venda.fkUsuario;
+      if (userId) {
+        userIds.add(userId);
       }
+    });
 
-      // Usar campos do backend: nome, email, telefone, perfil
-      tbody.innerHTML = allUsers.map(user => `
-        <tr>
-          <td>${user.id}</td>
-          <td><img src="${user.avatar || 'https://i.pravatar.cc/150?img=1'}" alt="${user.nome}" class="user-avatar"></td>
-          <td>${user.nome}</td>
-          <td>${user.email}</td>
-          <td>${user.telefone || '-'}</td>
-          <td><span class="role-badge ${user.perfil}">${user.perfil === 'Administrador' ? 'Admin' : 'Usuário'}</span></td>
-          <td>
-            <div class="action-buttons">
-              <button class="action-btn view" onclick="viewUser(${user.id})">Ver</button>
-              <button class="action-btn edit" onclick="editUser(${user.id})">Editar</button>
-              <button class="action-btn delete" onclick="deleteUser(${user.id})">Excluir</button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    } else {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erro ao carregar usuários</td></tr>';
+    if (userIds.size === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum usuário encontrado (sem vendas registradas)</td></tr>';
+      allUsers = [];
+      return;
     }
+
+    // Buscar dados completos de cada usuário fazendo loop em GET /usuarios/:id
+    const userPromises = Array.from(userIds).map(async (id) => {
+      try {
+        const result = await UserAPI.getById(id);
+        return result;
+      } catch (error) {
+        console.error(`Erro ao buscar usuário ${id}:`, error);
+        return { success: false };
+      }
+    });
+
+    const userResults = await Promise.all(userPromises);
+
+    // Filtrar apenas resultados bem-sucedidos
+    allUsers = userResults
+      .filter(result => result.success && result.data)
+      .map(result => result.data);
+
+    if (allUsers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhum usuário encontrado</td></tr>';
+      return;
+    }
+
+    // Renderizar tabela com usuários
+    tbody.innerHTML = allUsers.map(user => `
+      <tr>
+        <td>${user.id}</td>
+        <td><img src="${generateAvatar(user.nome)}" alt="${user.nome}" class="user-avatar"></td>
+        <td>${user.nome}</td>
+        <td>${user.email}</td>
+        <td>${user.telefone || '-'}</td>
+        <td><span class="role-badge ${user.perfil || 'Cliente'}">${user.perfil === 'Administrador' ? 'Admin' : 'Usuário'}</span></td>
+        <td>
+          <div class="action-buttons">
+            <button class="action-btn view" onclick="viewUser(${user.id})">Ver</button>
+            <button class="action-btn edit" onclick="editUser(${user.id})">Editar</button>
+            <button class="action-btn delete" onclick="deleteUser(${user.id})">Excluir</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
   } catch (error) {
     console.error('Erro ao carregar usuários:', error);
     tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Erro ao conectar com servidor</td></tr>';
+    allUsers = [];
   }
 }
 
@@ -513,18 +634,28 @@ async function loadGames() {
     const result = await GameAPI.getAll();
 
     if (result.success && result.data) {
-      allGames = result.data;
+      // Normalizar dados dos jogos
+      allGames = result.data.map(jogo => normalizeGame(jogo));
+
+      // Adicionar empresa_nome aos jogos usando allCompanies
+      allGames = allGames.map(jogo => {
+        const empresa = allCompanies.find(e => e.id === jogo.empresa_id);
+        return {
+          ...jogo,
+          empresa_nome: empresa ? empresa.nome : '-'
+        };
+      });
 
       if (allGames.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum jogo encontrado</td></tr>';
         return;
       }
 
-      // Usar campos do backend: titulo, preco, categoria, avaliacao_media, imagem, empresa_nome
+      // Renderizar jogos com dados normalizados
       tbody.innerHTML = allGames.map(jogo => {
-        const imagemUrl = jogo.imagem || jogo.imagens || 'images/default.jpg';
+        const imagemUrl = jogo.imagem || 'images/default.jpg';
         const avaliacaoMedia = jogo.avaliacao_media || 0;
-        const empresaNome = jogo.empresa_nome || jogo.empresa?.nome || '-';
+        const empresaNome = jogo.empresa_nome || '-';
 
         return `
           <tr>
@@ -821,25 +952,24 @@ async function handleCreateUser(e) {
   e.preventDefault();
   const formData = new FormData(e.target);
 
-  // Usar campos do backend
+  // Usar apenas campos suportados por /auth/register
   const userData = {
     nome: formData.get('name'),
     email: formData.get('email'),
-    senha: formData.get('password'),
-    telefone: formData.get('phone'),
-    perfil: formData.get('role')
+    senha: formData.get('password')
+    // Telefone e perfil removidos - não suportados por /auth/register
   };
 
   try {
     const result = await UserAPI.create(userData);
 
     if (result.success) {
-      showSuccess('Usuário criado com sucesso');
+      showSuccess('Usuário criado com sucesso (perfil: Cliente)');
       closeModal('createUserModal');
       e.target.reset();
       await loadUsers();
     } else {
-      showError(result.error || 'Erro ao criar usuário');
+      showError(result.error || result.message || 'Erro ao criar usuário');
     }
   } catch (error) {
     console.error('Erro ao criar usuário:', error);

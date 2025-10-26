@@ -53,16 +53,19 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
       const decoded = API.decodeToken(token);
 
       if (decoded && decoded.id) {
-        // Buscar dados completos do usuário
+        // Buscar dados completos do usuário (para dados extras como email, data_nascimento)
         const userResult = await UserAPI.getById(decoded.id);
 
         if (userResult.success && userResult.data) {
-          // Salvar dados completos no localStorage
-          const userData = userResult.data;
-          const userToStore = { ...userData };
-          delete userToStore.senha;
-          delete userToStore.password;
-
+          // Combinar dados da API com dados do token (token tem prioridade no perfil)
+          const userToStore = {
+            id: decoded.id,
+            nome: decoded.nome,
+            perfil: decoded.perfil,  // Usar perfil do token (sempre correto)
+            email: userResult.data.email,
+            data_nascimento: userResult.data.data_nascimento,
+            telefone: userResult.data.telefone
+          };
           Storage.set('currentUser', userToStore);
           debugLog('User data saved:', userToStore);
         } else {
