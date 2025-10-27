@@ -53,7 +53,7 @@ function normalizeGame(jogo) {
     categoria_id: jogo.fkCategoria || jogo.fk_categoria || jogo.categoria_id,
     categoria: getCategoryName(jogo.fkCategoria || jogo.fk_categoria),
     empresa_nome: jogo.empresa_nome,  // Será preenchido depois
-    imagem: jogo.imagem || 'images/default.jpg',
+    imagem: getGameImage(jogo.nome || jogo.titulo),  // Usar mapeamento de imagens
     destaque: jogo.destaque || false,
     avaliacao_media: jogo.avaliacao_media || 0
   };
@@ -714,7 +714,7 @@ async function viewGame(gameId) {
       });
     });
 
-    const imagemUrl = jogo.imagem || jogo.imagens || 'images/default.jpg';
+    const imagemUrl = getGameImage(jogo.nome || jogo.titulo);
     const avaliacaoMedia = jogo.avaliacao_media || 0;
     const empresaNome = jogo.empresa_nome || jogo.empresa?.nome || '-';
 

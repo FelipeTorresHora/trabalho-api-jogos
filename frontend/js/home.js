@@ -97,7 +97,7 @@ function renderCarouselSlides() {
   const slidesContainer = document.getElementById('heroSlides');
 
   slidesContainer.innerHTML = featuredGames.map((jogo, index) => {
-    const imagemUrl = jogo.imagem || jogo.imagens || 'images/default.jpg';
+    const imagemUrl = getGameImage(jogo.nome || jogo.titulo);
     const descricaoPreview = jogo.descricao ? jogo.descricao.substring(0, 150) + '...' : '';
     const nomeJogo = jogo.nome || jogo.titulo || 'Jogo';
 
@@ -355,7 +355,7 @@ function createGameCard(jogo) {
   card.className = 'game-card';
 
   // Usar campos do backend: nome, fkCategoria, preco
-  const imagemUrl = jogo.imagem || jogo.imagens || 'images/default.jpg';
+  const imagemUrl = getGameImage(jogo.nome || jogo.titulo);
   const avaliacaoMedia = jogo.avaliacao_media || 0;
   const nomeJogo = jogo.nome || jogo.titulo || 'Jogo';
   const categoriaNome = getCategoryName(jogo.fkCategoria);

@@ -123,11 +123,8 @@ function loadOrderSummary() {
     const jogo = item.jogo || {};
     const titulo = jogo.nome || jogo.titulo || 'Jogo';
 
-    // Preparar imagens - backend pode retornar string ou array
-    const imagens = Array.isArray(jogo.imagens)
-      ? jogo.imagens
-      : (jogo.imagem ? [jogo.imagem] : ['images/default.jpg']);
-    const imagemUrl = imagens[0];
+    // Obter imagem usando o mapeamento
+    const imagemUrl = getGameImage(titulo);
 
     const categoria = getCategoryName(jogo.fkCategoria);
     const preco = jogo.preco || 0;

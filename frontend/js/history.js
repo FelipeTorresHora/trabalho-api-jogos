@@ -358,13 +358,11 @@ async function openReviewModal(gameId, orderId) {
     reviewGameIdInput.value = gameId;
     reviewOrderIdInput.value = orderId;
 
-    // Preparar imagem
-    const imagemUrl = Array.isArray(jogo.imagens)
-      ? jogo.imagens[0]
-      : (jogo.imagem || 'images/default.jpg');
+    // Obter imagem usando o mapeamento
+    const tituloJogo = jogo.nome || jogo.titulo || 'Jogo';
+    const imagemUrl = getGameImage(tituloJogo);
 
     // Render game info
-    const tituloJogo = jogo.nome || jogo.titulo || 'Jogo';
     const categoriaJogo = getCategoryName(jogo.fkCategoria);
 
     gameInfoContainer.innerHTML = `

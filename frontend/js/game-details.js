@@ -99,10 +99,9 @@ async function loadGameDetails() {
 async function renderGameDetails() {
   const container = document.getElementById('gameDetailsContainer');
 
-  // Preparar imagens - backend pode retornar string ou array
-  const imagens = Array.isArray(currentGame.imagens)
-    ? currentGame.imagens
-    : (currentGame.imagem ? [currentGame.imagem] : ['images/default.jpg']);
+  // Obter imagem usando o mapeamento
+  const imagemUrl = getGameImage(currentGame.nome || currentGame.titulo);
+  const imagens = [imagemUrl]; // Usar a imagem mapeada
 
   const avaliacaoMedia = currentGame.avaliacao_media || 0;
   const nomeJogo = currentGame.nome || currentGame.titulo || 'Jogo';
@@ -213,10 +212,9 @@ function setupEventListeners() {
   const thumbnails = document.querySelectorAll('.thumbnail');
   const mainImage = document.getElementById('mainImage');
 
-  // Preparar imagens - backend pode retornar string ou array
-  const imagens = Array.isArray(currentGame.imagens)
-    ? currentGame.imagens
-    : (currentGame.imagem ? [currentGame.imagem] : ['images/default.jpg']);
+  // Obter imagem usando o mapeamento
+  const imagemUrl = getGameImage(currentGame.nome || currentGame.titulo);
+  const imagens = [imagemUrl]; // Usar a imagem mapeada
 
   thumbnails.forEach(thumb => {
     thumb.addEventListener('click', function() {
@@ -288,10 +286,19 @@ function setupEventListeners() {
   });
 
   // Buy now button
-  document.getElementById('buyNowBtn').addEventListener('click', function() {
+  document.getElementById('buyNowBtn').addEventListener('click', async function() {
     // Add to cart and go to cart page
-    Cart.addItem(currentGame.id);
-    window.location.href = 'cart.html';
+    try {
+      const result = await CartAPI.add(currentGame.id);
+      if (result.success) {
+        window.location.href = 'cart.html';
+      } else {
+        showError(result.error || 'Erro ao adicionar ao carrinho');
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      showError('Erro ao conectar com servidor');
+    }
   });
 
   // Wishlist button

@@ -184,7 +184,7 @@ function renderCartItem(item) {
   }
 
   const nomeJogo = jogo.nome || jogo.titulo || 'Jogo';
-  const imagemUrl = jogo.imagem || jogo.imagens || 'images/default.jpg';
+  const imagemUrl = getGameImage(nomeJogo);
   const categoriaNome = getCategoryName(jogo.fkCategoria);
   const preco = jogo.preco || 0;
   const quantidade = 1; // Backend não retorna quantidade, assumir 1
