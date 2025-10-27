@@ -358,10 +358,10 @@ textarea.error {
   position: relative;
   display: inline-flex;
   align-items: center;
-  width: 85px;
-  height: 36px;
+  width: 70px;
+  height: 34px;
   background: var(--surface-elevated);
-  border-radius: 18px;
+  border-radius: 17px;
   padding: 3px;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -382,9 +382,9 @@ textarea.error {
 .theme-option {
   position: relative;
   z-index: 2;
-  font-size: 18px;
-  width: 30px;
-  height: 30px;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -404,7 +404,7 @@ textarea.error {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 38px;
+  width: 32px;
   height: 28px;
   background: var(--color-primary);
   border-radius: 14px;
@@ -414,7 +414,7 @@ textarea.error {
 
 /* Quando checkbox marcado (Classic Mode) */
 .theme-toggle input:checked ~ .theme-slider {
-  transform: translateX(44px);
+  transform: translateX(32px);
 }
 
 .theme-toggle input:checked ~ .theme-option.dark-mode {
@@ -643,17 +643,17 @@ textarea.error {
 
   /* Theme Toggle Responsivo */
   .theme-toggle {
-    width: 75px;
-    height: 32px;
+    width: 64px;
+    height: 30px;
   }
 
   .theme-slider {
-    width: 34px;
-    height: 26px;
+    width: 28px;
+    height: 24px;
   }
 
   .theme-toggle input:checked ~ .theme-slider {
-    transform: translateX(38px);
+    transform: translateX(30px);
   }
 
   .grid-2,
