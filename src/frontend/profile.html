@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil - Aventurem</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="home.html" class="logo">Aventurem</a>
+
+      <button class="mobile-menu-toggle" aria-label="Menu">☰</button>
+
+      <nav class="nav">
+        <ul class="nav-links">
+          <li><a href="home.html">Início</a></li>
+          <li><a href="home.html#games">Jogos</a></li>
+          <li id="adminLinkContainer" style="display: none;"><a href="admin.html" id="adminLink">Admin</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="theme-toggle-container">
+          <label class="theme-toggle" for="themeToggle">
+            <span class="theme-option dark-mode">☀️</span>
+            <input
+              type="checkbox"
+              id="themeToggle"
+              aria-label="Alternar tema"
+              onclick="ThemeManager.toggleTheme()"
+            >
+            <span class="theme-slider"></span>
+            <span class="theme-option classic-mode">🌙</span>
+          </label>
+        </div>
+
+        <a href="cart.html" class="icon-btn" aria-label="Carrinho">
+          🛒
+          <span class="cart-badge">0</span>
+        </a>
+
+        <a href="profile.html" class="icon-btn active" aria-label="Perfil">👤</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container-small">
+    <a href="home.html" class="back-button">← Voltar</a>
+
+    <div class="profile-container">
+      <h1 class="page-title">Meu Perfil</h1>
+
+      <div class="profile-card">
+        <div class="avatar-section">
+          <img src="" alt="Avatar" class="avatar" id="userAvatar">
+          <p class="text-secondary text-center" style="font-size: 12px; margin-top: 8px;">
+            Foto de perfil
+          </p>
+        </div>
+
+        <form id="profileForm">
+          <div class="form-group">
+            <label for="name">Nome de usuário</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <small class="form-helper" id="emailHelper" style="display: none; color: #ff6b6b;"></small>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Telefone</label>
+            <input type="tel" id="phone" name="phone" placeholder="(00) 00000-0000">
+          </div>
+
+          <button type="submit" class="btn btn-full">Salvar Alterações</button>
+        </form>
+
+        <!-- Password Change Section -->
+        <div class="password-section" style="margin-top: 40px; padding-top: 40px; border-top: 2px solid var(--color-bg-secondary);">
+          <h2 class="section-title">Alterar Senha</h2>
+          <form id="passwordForm">
+            <div class="form-group">
+              <label for="currentPassword">Senha Atual</label>
+              <input type="password" id="currentPassword" name="currentPassword" required>
+            </div>
+
+            <div class="form-group">
+              <label for="newPassword">Nova Senha</label>
+              <input type="password" id="newPassword" name="newPassword" required minlength="8">
+              <small class="form-helper">Mínimo de 8 caracteres</small>
+              <div id="passwordStrength" style="margin-top: 8px; display: none;">
+                <div style="height: 4px; background: #333; border-radius: 2px; overflow: hidden;">
+                  <div id="passwordStrengthBar" style="height: 100%; width: 0%; transition: all 0.3s;"></div>
+                </div>
+                <small id="passwordStrengthText" style="display: block; margin-top: 4px;"></small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirmar Nova Senha</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8">
+              <small class="form-helper" id="confirmPasswordHelper" style="display: none; color: #ff6b6b;"></small>
+            </div>
+
+            <button type="submit" class="btn btn-full">Alterar Senha</button>
+          </form>
+        </div>
+
+        <!-- Wishlist Section -->
+        <div class="wishlist-section">
+          <h2 class="section-title">Lista de Desejos</h2>
+          <div id="wishlistContainer">
+            <!-- Wishlist items will be loaded dynamically -->
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <a href="history.html" class="btn btn-secondary btn-full">
+            📦 Ver Histórico de Compras
+          </a>
+
+          <button class="btn-logout" id="logoutBtn">
+            Sair da Conta
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+    // Show admin link if user is admin
+    if (Auth.isAdmin()) {
+      document.getElementById('adminLinkContainer').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

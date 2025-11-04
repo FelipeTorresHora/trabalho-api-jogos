@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Aventurem</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/checkout.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="home.html" class="logo">Aventurem</a>
+
+      <button class="mobile-menu-toggle" aria-label="Menu">☰</button>
+
+      <nav class="nav">
+        <ul class="nav-links">
+          <li><a href="home.html">Início</a></li>
+          <li><a href="home.html#games">Jogos</a></li>
+          <li id="adminLinkContainer" style="display: none;"><a href="admin.html" id="adminLink">Admin</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div class="theme-toggle-container">
+          <label class="theme-toggle" for="themeToggle">
+            <span class="theme-option dark-mode">☀️</span>
+            <input
+              type="checkbox"
+              id="themeToggle"
+              aria-label="Alternar tema"
+              onclick="ThemeManager.toggleTheme()"
+            >
+            <span class="theme-slider"></span>
+            <span class="theme-option classic-mode">🌙</span>
+          </label>
+        </div>
+
+        <a href="cart.html" class="icon-btn" aria-label="Carrinho">
+          🛒
+          <span class="cart-badge">0</span>
+        </a>
+
+        <a href="profile.html" class="icon-btn" aria-label="Perfil">👤</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <a href="cart.html" class="back-button">← Voltar ao Carrinho</a>
+
+    <div class="checkout-container">
+      <div class="checkout-form-section">
+        <h1 class="checkout-title">Finalizar Compra</h1>
+
+        <form id="checkoutForm">
+          <!-- Contact Information -->
+          <section class="form-section">
+            <h2 class="section-title">Informações de Contato</h2>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Telefone</label>
+              <input type="tel" id="phone" name="phone" placeholder="(00) 00000-0000" required>
+            </div>
+          </section>
+
+          <!-- Payment Method -->
+          <section class="form-section">
+            <h2 class="section-title">Método de Pagamento</h2>
+
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="paymentMethod" value="card" checked>
+                <span>💳 Cartão de Crédito</span>
+              </label>
+
+              <label class="radio-option">
+                <input type="radio" name="paymentMethod" value="pix">
+                <span>📱 Pix</span>
+              </label>
+            </div>
+
+            <!-- Card Details (conditional) -->
+            <div id="cardDetails" class="card-details">
+              <div class="form-group">
+                <label for="cardNumber">Número do Cartão</label>
+                <input type="text" id="cardNumber" name="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19">
+              </div>
+
+              <div class="form-group">
+                <label for="cardName">Nome no Cartão</label>
+                <input type="text" id="cardName" name="cardName" placeholder="NOME SOBRENOME">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="cardExpiry">Validade</label>
+                  <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/AA" maxlength="5">
+                </div>
+
+                <div class="form-group">
+                  <label for="cardCvv">CVV</label>
+                  <input type="text" id="cardCvv" name="cardCvv" placeholder="000" maxlength="3">
+                </div>
+              </div>
+            </div>
+
+            <!-- Pix Details (conditional) -->
+            <div id="pixDetails" class="pix-details hidden">
+              <p class="text-secondary">Você receberá o código Pix após confirmar o pedido.</p>
+            </div>
+          </section>
+
+          <!-- Billing Address -->
+          <section class="form-section">
+            <h2 class="section-title">Endereço de Cobrança</h2>
+
+            <div class="form-group">
+              <label for="cep">CEP</label>
+              <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9" required>
+            </div>
+
+            <div class="form-group">
+              <label for="street">Rua</label>
+              <input type="text" id="street" name="street" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="number">Número</label>
+                <input type="text" id="number" name="number" required>
+              </div>
+
+              <div class="form-group">
+                <label for="neighborhood">Bairro</label>
+                <input type="text" id="neighborhood" name="neighborhood" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="city">Cidade</label>
+                <input type="text" id="city" name="city" required>
+              </div>
+
+              <div class="form-group">
+                <label for="state">Estado</label>
+                <select id="state" name="state" required>
+                  <option value="">Selecione...</option>
+                  <option value="AC">Acre</option>
+                  <option value="AL">Alagoas</option>
+                  <option value="AP">Amapá</option>
+                  <option value="AM">Amazonas</option>
+                  <option value="BA">Bahia</option>
+                  <option value="CE">Ceará</option>
+                  <option value="DF">Distrito Federal</option>
+                  <option value="ES">Espírito Santo</option>
+                  <option value="GO">Goiás</option>
+                  <option value="MA">Maranhão</option>
+                  <option value="MT">Mato Grosso</option>
+                  <option value="MS">Mato Grosso do Sul</option>
+                  <option value="MG">Minas Gerais</option>
+                  <option value="PA">Pará</option>
+                  <option value="PB">Paraíba</option>
+                  <option value="PR">Paraná</option>
+                  <option value="PE">Pernambuco</option>
+                  <option value="PI">Piauí</option>
+                  <option value="RJ">Rio de Janeiro</option>
+                  <option value="RN">Rio Grande do Norte</option>
+                  <option value="RS">Rio Grande do Sul</option>
+                  <option value="RO">Rondônia</option>
+                  <option value="RR">Roraima</option>
+                  <option value="SC">Santa Catarina</option>
+                  <option value="SP">São Paulo</option>
+                  <option value="SE">Sergipe</option>
+                  <option value="TO">Tocantins</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <button type="submit" class="btn btn-full mt-xl">Confirmar Pedido</button>
+        </form>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="order-summary-section">
+        <div class="order-summary card">
+          <h2 class="section-title">Resumo do Pedido</h2>
+
+          <div id="orderItems" class="order-items">
+            <!-- Items will be loaded dynamically -->
+          </div>
+
+          <div class="order-totals">
+            <div class="order-total-row">
+              <span>Subtotal:</span>
+              <span id="orderSubtotal">R$ 0,00</span>
+            </div>
+            <div class="order-total-row total">
+              <span>Total:</span>
+              <span id="orderTotal">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/image-mapping.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/checkout.js"></script>
+  <script>
+    // Show admin link if user is admin
+    if (Auth.isAdmin()) {
+      document.getElementById('adminLinkContainer').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
