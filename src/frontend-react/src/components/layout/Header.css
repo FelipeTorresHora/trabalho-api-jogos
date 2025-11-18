@@ -1,0 +1,240 @@
+/* Header */
+.header {
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+}
+
+.logo {
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+  flex: 1;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--spacing-xl);
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--text-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+.search-bar {
+  position: relative;
+}
+
+.search-bar input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  width: 250px;
+  border: 1px solid var(--bg-surface);
+  font-size: var(--font-size-small);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 20px;
+  padding: var(--spacing-sm);
+  transition: var(--transition);
+  position: relative;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Theme Toggle Switch */
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 70px;
+  height: 34px;
+  background: var(--bg-surface);
+  border-radius: 17px;
+  padding: 3px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  border: 2px solid var(--bg-surface);
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-accent);
+}
+
+.theme-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-option {
+  position: relative;
+  z-index: 2;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.theme-option.dark-mode {
+  opacity: 1;
+}
+
+.theme-option.classic-mode {
+  opacity: 0.4;
+}
+
+/* Slider que desliza */
+.theme-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 32px;
+  height: 28px;
+  background: var(--color-accent);
+  border-radius: 14px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Quando checkbox marcado (Classic Mode) */
+.theme-toggle input:checked ~ .theme-slider {
+  transform: translateX(32px);
+}
+
+.theme-toggle input:checked ~ .theme-option.dark-mode {
+  opacity: 0.4;
+}
+
+.theme-toggle input:checked ~ .theme-option.classic-mode {
+  opacity: 1;
+}
+
+.cart-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-accent);
+  color: var(--bg-primary);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-content {
+    flex-wrap: wrap;
+  }
+
+  .nav {
+    display: none;
+    width: 100%;
+    order: 3;
+  }
+
+  .nav.active {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .search-bar input {
+    width: 180px;
+  }
+
+  /* Theme Toggle Responsivo */
+  .theme-toggle {
+    width: 64px;
+    height: 30px;
+  }
+
+  .theme-slider {
+    width: 28px;
+    height: 24px;
+  }
+
+  .theme-toggle input:checked ~ .theme-slider {
+    transform: translateX(30px);
+  }
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    display: none;
+  }
+
+  .header-actions {
+    gap: var(--spacing-md);
+  }
+}

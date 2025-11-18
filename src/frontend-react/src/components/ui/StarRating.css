@@ -1,0 +1,11 @@
+.rating-interactive {
+  cursor: pointer;
+}
+
+.rating-interactive .star {
+  transition: var(--transition);
+}
+
+.rating-interactive .star:hover {
+  transform: scale(1.2);
+}
