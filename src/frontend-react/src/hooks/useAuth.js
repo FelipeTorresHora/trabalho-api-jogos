@@ -1,5 +1,5 @@
 import { useAuthStore } from '../stores/authStore';
-import { AuthAPI } from '../services/api';
+import { AuthAPI, API } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 export function useAuth() {
@@ -9,10 +9,12 @@ export function useAuth() {
   const login = async (email, password) => {
     const result = await AuthAPI.login(email, password);
 
-    if (result.success && result.data) {
-      const userData = result.data.usuario || result.data;
-      setUser(userData);
-      return { success: true };
+    if (result.success && result.data && result.data.token) {
+      const decoded = API.decodeToken(result.data.token);
+      if (decoded) {
+        setUser(decoded);
+        return { success: true };
+      }
     }
 
     return { success: false, error: result.error };

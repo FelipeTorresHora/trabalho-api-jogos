@@ -1,14 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
+import { useWishlist } from '../../hooks/useWishlist';
 import { useTheme } from '../../hooks/useTheme';
 import { useDebounce } from '../../hooks/useDebounce';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './Header.css';
 
 function Header({ onSearch }) {
   const { isAdmin } = useAuth();
   const { cartCount } = useCart();
+  const { items: wishlistItems } = useWishlist();
+  const wishlistCount = wishlistItems?.length || 0;
   const { theme, toggleTheme } = useTheme();
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,7 +20,7 @@ function Header({ onSearch }) {
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   // Call onSearch when debouncedSearch changes
-  useState(() => {
+  useEffect(() => {
     if (onSearch) {
       onSearch(debouncedSearch);
     }
@@ -58,6 +61,11 @@ function Header({ onSearch }) {
                 Jogos
               </Link>
             </li>
+            <li>
+              <Link to="/my-games" onClick={() => setMobileMenuOpen(false)}>
+                Meus Jogos
+              </Link>
+            </li>
             {isAdmin && (
               <li>
                 <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
@@ -94,6 +102,11 @@ function Header({ onSearch }) {
               <span className="theme-option classic-mode">🌙</span>
             </label>
           </div>
+
+          <Link to="/wishlist" className="icon-btn" aria-label="Lista de Desejos">
+            ❤️
+            {wishlistCount > 0 && <span className="cart-badge">{wishlistCount}</span>}
+          </Link>
 
           <Link to="/cart" className="icon-btn" aria-label="Carrinho">
             🛒

@@ -4,31 +4,40 @@ import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
+import CardBrandIcon from '../components/ui/CardBrandIcon';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
+import { useCategory } from '../hooks/useCategory';
 import { GameAPI, SaleAPI } from '../services/api';
 import { formatCurrency, getGameImage } from '../utils/helpers';
+import {
+  validateEmail,
+  validateCardNumber,
+  validateCardExpiry,
+  validateCardCVV,
+  validateCEP,
+  detectCardBrand,
+  formatCardNumber,
+  formatCardExpiry,
+  formatCEP,
+  formatPhone
+} from '../utils/validators';
 import './Checkout.css';
-
-const CATEGORIAS = {
-  1: 'Ação', 2: 'RPG', 3: 'Aventura', 4: 'Estratégia', 5: 'Esporte',
-  6: 'Corrida', 7: 'Terror', 8: 'Puzzle', 9: 'Simulação', 10: 'Plataforma',
-  11: 'Luta', 12: 'Tiro', 13: 'Musical', 14: 'Ação', 15: 'Casual'
-};
-
-const getCategoryName = (fkCategoria) => CATEGORIAS[fkCategoria] || 'Outros';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
   const { user } = useAuth();
+  const { getCategoryName } = useCategory();
   const { showSuccess, showError } = useToast();
 
   const [cartItems, setCartItems] = useState([]);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [cardBrand, setCardBrand] = useState('unknown');
 
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -82,40 +91,90 @@ export default function Checkout() {
     const { name, value } = e.target;
     let formatted = value;
 
-    // Format card number
+    // Format and validate card number
     if (name === 'cardNumber') {
-      formatted = value.replace(/\s/g, '').match(/.{1,4}/g)?.join(' ') || value;
+      formatted = formatCardNumber(value);
+      const brand = detectCardBrand(formatted);
+      setCardBrand(brand);
     }
 
     // Format card expiry
     if (name === 'cardExpiry') {
-      formatted = value.replace(/\D/g, '');
-      if (formatted.length >= 2) {
-        formatted = formatted.slice(0, 2) + '/' + formatted.slice(2, 4);
-      }
+      formatted = formatCardExpiry(value);
     }
 
     // Format CEP
     if (name === 'cep') {
-      formatted = value.replace(/\D/g, '');
-      if (formatted.length >= 5) {
-        formatted = formatted.slice(0, 5) + '-' + formatted.slice(5, 8);
-      }
+      formatted = formatCEP(value);
     }
 
     // Format phone
     if (name === 'phone') {
-      formatted = value.replace(/\D/g, '');
-      if (formatted.length >= 10) {
-        formatted = `(${formatted.slice(0, 2)}) ${formatted.slice(2, 7)}-${formatted.slice(7, 11)}`;
-      }
+      formatted = formatPhone(value);
     }
 
     setFormData(prev => ({ ...prev, [name]: formatted }));
+
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validate = () => {
+    const newErrors = {};
+
+    // Validate email
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.valid) {
+      newErrors.email = emailValidation.message;
+    }
+
+    // Validate card details only if payment method is card
+    if (paymentMethod === 'card') {
+      // Validate card number
+      const cardValidation = validateCardNumber(formData.cardNumber);
+      if (!cardValidation.valid) {
+        newErrors.cardNumber = cardValidation.message;
+      }
+
+      // Validate card name
+      if (!formData.cardName || formData.cardName.length < 3) {
+        newErrors.cardName = 'Nome no cartão deve ter pelo menos 3 caracteres';
+      }
+
+      // Validate card expiry
+      const expiryValidation = validateCardExpiry(formData.cardExpiry);
+      if (!expiryValidation.valid) {
+        newErrors.cardExpiry = expiryValidation.message;
+      }
+
+      // Validate CVV
+      const cvvValidation = validateCardCVV(formData.cardCvv, cardBrand);
+      if (!cvvValidation.valid) {
+        newErrors.cardCvv = cvvValidation.message;
+      }
+    }
+
+    // Validate CEP (optional but if filled, must be valid)
+    if (formData.cep) {
+      const cepValidation = validateCEP(formData.cep);
+      if (!cepValidation.valid) {
+        newErrors.cep = cepValidation.message;
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validate()) {
+      showError('Por favor, corrija os erros no formulário');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -170,6 +229,7 @@ export default function Checkout() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    error={errors.email}
                     required
                   />
                   <Input
@@ -179,6 +239,7 @@ export default function Checkout() {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="(00) 00000-0000"
+                    error={errors.phone}
                     required
                   />
                 </section>
@@ -211,22 +272,32 @@ export default function Checkout() {
 
                   {paymentMethod === 'card' && (
                     <div className="card-details">
-                      <Input
-                        label="Número do Cartão"
-                        type="text"
-                        name="cardNumber"
-                        value={formData.cardNumber}
-                        onChange={handleChange}
-                        placeholder="0000 0000 0000 0000"
-                        maxLength={19}
-                        required
-                      />
+                      <div className="card-number-wrapper">
+                        <Input
+                          label="Número do Cartão"
+                          type="text"
+                          name="cardNumber"
+                          value={formData.cardNumber}
+                          onChange={handleChange}
+                          placeholder="0000 0000 0000 0000"
+                          maxLength={19}
+                          error={errors.cardNumber}
+                          required
+                        />
+                        {formData.cardNumber && (
+                          <div className="card-brand-indicator">
+                            <CardBrandIcon brand={cardBrand} size="medium" />
+                          </div>
+                        )}
+                      </div>
                       <Input
                         label="Nome no Cartão"
                         type="text"
                         name="cardName"
                         value={formData.cardName}
                         onChange={handleChange}
+                        placeholder="Como está escrito no cartão"
+                        error={errors.cardName}
                         required
                       />
                       <div className="card-row">
@@ -238,6 +309,7 @@ export default function Checkout() {
                           onChange={handleChange}
                           placeholder="MM/AA"
                           maxLength={5}
+                          error={errors.cardExpiry}
                           required
                         />
                         <Input
@@ -248,6 +320,7 @@ export default function Checkout() {
                           onChange={handleChange}
                           placeholder="000"
                           maxLength={4}
+                          error={errors.cardCvv}
                           required
                         />
                       </div>
@@ -272,6 +345,7 @@ export default function Checkout() {
                     onChange={handleChange}
                     placeholder="00000-000"
                     maxLength={9}
+                    error={errors.cep}
                   />
                   <Input
                     label="Endereço"

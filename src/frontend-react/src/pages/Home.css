@@ -129,35 +129,72 @@
 /* Category Filter */
 .category-filter-section {
   margin-bottom: var(--spacing-xl);
-}
-
-.category-filter {
-  display: flex;
-  gap: var(--spacing-sm);
-  overflow-x: auto;
-  padding: var(--spacing-sm) 0;
-}
-
-.category-btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-lg) 0;
   background: var(--bg-secondary);
-  border: 2px solid transparent;
-  border-radius: var(--radius-full);
-  color: var(--text-primary);
+  border-radius: var(--radius-md);
+}
+
+.filters-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.category-dropdown-wrapper,
+.sort-dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 280px;
+}
+
+.category-label,
+.sort-label {
+  font-size: 1rem;
   font-weight: 600;
-  cursor: pointer;
+  color: var(--text-primary);
   white-space: nowrap;
+  min-width: fit-content;
+}
+
+.results-count {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+  margin-top: var(--spacing-sm);
+  width: 100%;
+}
+
+.category-dropdown-wrapper select,
+.sort-dropdown-wrapper select {
+  flex: 1;
+  padding: var(--spacing-md);
+  font-size: 1rem;
+  font-weight: 500;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
   transition: all 0.3s;
 }
 
-.category-btn:hover {
-  background: var(--bg-hover);
+.category-dropdown-wrapper select:hover,
+.sort-dropdown-wrapper select:hover {
+  border-color: var(--color-accent);
 }
 
-.category-btn.active {
-  background: var(--color-accent);
-  color: white;
+.category-dropdown-wrapper select:focus,
+.sort-dropdown-wrapper select:focus {
+  outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(189, 178, 255, 0.1);
 }
 
 /* Games Grid */
@@ -186,20 +223,12 @@
 
 .game-image {
   width: 100%;
-  height: 200px;
+  height: 280px;
   object-fit: cover;
 }
 
 .game-info {
   padding: var(--spacing-md);
-}
-
-.game-category {
-  font-size: 0.8rem;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: var(--spacing-xs);
 }
 
 .game-title {
@@ -219,7 +248,14 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-accent);
+  margin-bottom: var(--spacing-sm);
+}
+
+.game-company {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
   margin-bottom: var(--spacing-md);
+  font-style: italic;
 }
 
 .game-actions {
@@ -262,5 +298,29 @@
 
   .games-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .filters-wrapper {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .category-dropdown-wrapper,
+  .sort-dropdown-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+    width: 100%;
+    min-width: unset;
+  }
+
+  .category-label,
+  .sort-label {
+    text-align: center;
+  }
+
+  .category-dropdown-wrapper select,
+  .sort-dropdown-wrapper select {
+    width: 100%;
   }
 }

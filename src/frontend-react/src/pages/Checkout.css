@@ -71,6 +71,18 @@
   border-radius: var(--radius-md);
 }
 
+.card-number-wrapper {
+  position: relative;
+}
+
+.card-brand-indicator {
+  position: absolute;
+  top: 40px;
+  right: 12px;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .card-row,
 .address-row {
   display: grid;

@@ -1,30 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import Pagination from '../components/ui/Pagination';
 import { useToast } from '../hooks/useToast';
+import { useCategory } from '../hooks/useCategory';
+import { useCompany } from '../hooks/useCompany';
 import { GameAPI, UserAPI, CompanyAPI, SaleAPI, CartAPI, ReviewAPI } from '../services/api';
 import { formatCurrency, formatDate, getGameImage, generateAvatar } from '../utils/helpers';
 import { Chart } from 'chart.js/auto';
 import './Admin.css';
 
-const CATEGORIAS = {
-  1: 'Ação', 2: 'RPG', 3: 'Aventura', 4: 'Estratégia', 5: 'Esporte',
-  6: 'Corrida', 7: 'Terror', 8: 'Puzzle', 9: 'Simulação', 10: 'Plataforma',
-  11: 'Luta', 12: 'Tiro', 13: 'Musical', 14: 'Ação', 15: 'Casual'
-};
-
-const getCategoryName = (fkCategoria) => CATEGORIAS[fkCategoria] || 'Outros';
-
 export default function Admin() {
   const { showSuccess, showError } = useToast();
+  const { getCategoryName, categories } = useCategory();
+  const { getCompanyName, companies, fetchCompanies } = useCompany();
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [users, setUsers] = useState([]);
   const [games, setGames] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [sales, setSales] = useState([]);
 
   // Charts
@@ -37,6 +34,33 @@ export default function Admin() {
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [editingGame, setEditingGame] = useState(null);
   const [editingCompany, setEditingCompany] = useState(null);
+
+  // Confirm Dialogs
+  const [showDeleteGameDialog, setShowDeleteGameDialog] = useState(false);
+  const [showDeleteCompanyDialog, setShowDeleteCompanyDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  // Pagination
+  const [usersPage, setUsersPage] = useState(1);
+  const [gamesPage, setGamesPage] = useState(1);
+  const [companiesPage, setCompaniesPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Paginated data
+  const paginatedUsers = useMemo(() => {
+    const start = (usersPage - 1) * itemsPerPage;
+    return users.slice(start, start + itemsPerPage);
+  }, [users, usersPage]);
+
+  const paginatedGames = useMemo(() => {
+    const start = (gamesPage - 1) * itemsPerPage;
+    return games.slice(start, start + itemsPerPage);
+  }, [games, gamesPage]);
+
+  const paginatedCompanies = useMemo(() => {
+    const start = (companiesPage - 1) * itemsPerPage;
+    return companies.slice(start, start + itemsPerPage);
+  }, [companies, companiesPage]);
 
   // Form data
   const [gameFormData, setGameFormData] = useState({
@@ -61,13 +85,12 @@ export default function Admin() {
     if (activeTab === 'dashboard' && sales.length > 0 && games.length > 0) {
       renderCharts();
     }
-  }, [activeTab, sales, games, companies]);
+  }, [activeTab, sales, games]);
 
   const loadAllData = async () => {
     await Promise.all([
       loadUsers(),
       loadGames(),
-      loadCompanies(),
       loadSales()
     ]);
   };
@@ -106,17 +129,6 @@ export default function Admin() {
       }
     } catch (error) {
       console.error('Error loading games:', error);
-    }
-  };
-
-  const loadCompanies = async () => {
-    try {
-      const result = await CompanyAPI.getAll();
-      if (result.success) {
-        setCompanies(result.data);
-      }
-    } catch (error) {
-      console.error('Error loading companies:', error);
     }
   };
 
@@ -203,8 +215,7 @@ export default function Admin() {
       venda.itens?.forEach(item => {
         const jogo = item.jogo || games.find(g => g.id === item.jogo_id);
         if (jogo && jogo.fkEmpresa) {
-          const empresa = companies.find(e => e.id === jogo.fkEmpresa);
-          const empresaNome = empresa?.nome || `Empresa ${jogo.fkEmpresa}`;
+          const empresaNome = getCompanyName(jogo.fkEmpresa);
           if (!brandSales[empresaNome]) {
             brandSales[empresaNome] = { name: empresaNome, quantity: 0, revenue: 0 };
           }
@@ -377,19 +388,30 @@ export default function Admin() {
     }
   };
 
-  const handleDeleteGame = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este jogo?')) return;
+  const handleDeleteGame = (game) => {
+    setItemToDelete({ type: 'game', id: game.id, name: game.nome || game.titulo });
+    setShowDeleteGameDialog(true);
+  };
+
+  const confirmDeleteGame = async () => {
+    if (!itemToDelete) return;
 
     try {
-      const result = await GameAPI.delete(id);
+      const result = await GameAPI.delete(itemToDelete.id);
       if (result.success) {
         showSuccess('Jogo excluído!');
         await loadGames();
+        setShowDeleteGameDialog(false);
+        setItemToDelete(null);
       } else {
         showError(result.error || 'Erro ao excluir jogo');
+        setShowDeleteGameDialog(false);
+        setItemToDelete(null);
       }
     } catch (error) {
       showError('Erro ao excluir jogo');
+      setShowDeleteGameDialog(false);
+      setItemToDelete(null);
     }
   };
 
@@ -419,7 +441,7 @@ export default function Admin() {
       if (result.success) {
         showSuccess(editingCompany ? 'Empresa atualizada!' : 'Empresa criada!');
         setShowCompanyModal(false);
-        await loadCompanies();
+        await fetchCompanies();
       } else {
         showError(result.error || 'Erro ao salvar empresa');
       }
@@ -428,20 +450,37 @@ export default function Admin() {
     }
   };
 
-  const handleDeleteCompany = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta empresa?')) return;
+  const handleDeleteCompany = (company) => {
+    setItemToDelete({ type: 'company', id: company.id, name: company.nome });
+    setShowDeleteCompanyDialog(true);
+  };
+
+  const confirmDeleteCompany = async () => {
+    if (!itemToDelete) return;
 
     try {
-      const result = await CompanyAPI.delete(id);
+      const result = await CompanyAPI.delete(itemToDelete.id);
       if (result.success) {
         showSuccess('Empresa excluída!');
-        await loadCompanies();
+        await fetchCompanies();
+        setShowDeleteCompanyDialog(false);
+        setItemToDelete(null);
       } else {
         showError(result.error || 'Erro ao excluir empresa');
+        setShowDeleteCompanyDialog(false);
+        setItemToDelete(null);
       }
     } catch (error) {
       showError('Erro ao excluir empresa');
+      setShowDeleteCompanyDialog(false);
+      setItemToDelete(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteGameDialog(false);
+    setShowDeleteCompanyDialog(false);
+    setItemToDelete(null);
   };
 
   return (
@@ -514,7 +553,7 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map(user => (
+                    {paginatedUsers.map(user => (
                       <tr key={user.id}>
                         <td>{user.id}</td>
                         <td>
@@ -536,6 +575,15 @@ export default function Admin() {
                     ))}
                   </tbody>
                 </table>
+                {users.length > 0 && (
+                  <Pagination
+                    currentPage={usersPage}
+                    totalPages={Math.ceil(users.length / itemsPerPage)}
+                    onPageChange={setUsersPage}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={users.length}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -557,7 +605,7 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {games.map(game => (
+                    {paginatedGames.map(game => (
                       <tr key={game.id}>
                         <td>{game.id}</td>
                         <td>
@@ -578,7 +626,7 @@ export default function Admin() {
                             <Button
                               size="small"
                               variant="danger"
-                              onClick={() => handleDeleteGame(game.id)}
+                              onClick={() => handleDeleteGame(game)}
                             >
                               Excluir
                             </Button>
@@ -588,6 +636,15 @@ export default function Admin() {
                     ))}
                   </tbody>
                 </table>
+                {games.length > 0 && (
+                  <Pagination
+                    currentPage={gamesPage}
+                    totalPages={Math.ceil(games.length / itemsPerPage)}
+                    onPageChange={setGamesPage}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={games.length}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -606,7 +663,7 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {companies.map(company => (
+                    {paginatedCompanies.map(company => (
                       <tr key={company.id}>
                         <td>{company.id}</td>
                         <td>{company.nome}</td>
@@ -618,7 +675,7 @@ export default function Admin() {
                             <Button
                               size="small"
                               variant="danger"
-                              onClick={() => handleDeleteCompany(company.id)}
+                              onClick={() => handleDeleteCompany(company)}
                             >
                               Excluir
                             </Button>
@@ -628,6 +685,15 @@ export default function Admin() {
                     ))}
                   </tbody>
                 </table>
+                {companies.length > 0 && (
+                  <Pagination
+                    currentPage={companiesPage}
+                    totalPages={Math.ceil(companies.length / itemsPerPage)}
+                    onPageChange={setCompaniesPage}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={companies.length}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -666,7 +732,7 @@ export default function Admin() {
             label="Categoria"
             value={gameFormData.fkCategoria}
             onChange={(e) => setGameFormData({ ...gameFormData, fkCategoria: e.target.value })}
-            options={Object.entries(CATEGORIAS).map(([id, name]) => ({ value: id, label: name }))}
+            options={categories.map(cat => ({ value: cat.id, label: cat.nome }))}
             required
           />
           <Select
@@ -721,6 +787,30 @@ export default function Admin() {
           </div>
         </form>
       </Modal>
+
+      {/* Confirm Dialog - Delete Game */}
+      <ConfirmDialog
+        isOpen={showDeleteGameDialog}
+        onConfirm={confirmDeleteGame}
+        onCancel={cancelDelete}
+        title="Excluir Jogo"
+        message={`Tem certeza que deseja excluir o jogo "${itemToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      {/* Confirm Dialog - Delete Company */}
+      <ConfirmDialog
+        isOpen={showDeleteCompanyDialog}
+        onConfirm={confirmDeleteCompany}
+        onCancel={cancelDelete}
+        title="Excluir Empresa"
+        message={`Tem certeza que deseja excluir a empresa "${itemToDelete?.name}"? Esta ação não pode ser desfeita e pode afetar jogos associados.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </Layout>
   );
 }

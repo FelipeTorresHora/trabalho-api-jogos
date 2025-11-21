@@ -11,6 +11,8 @@ import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
 import Profile from '../pages/Profile';
 import History from '../pages/History';
+import Wishlist from '../pages/Wishlist';
+import MyGames from '../pages/MyGames';
 import Admin from '../pages/Admin';
 
 function AppRoutes() {
@@ -47,6 +49,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/checkout"
           element={
             <ProtectedRoute>
@@ -67,6 +77,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-games"
+          element={
+            <ProtectedRoute>
+              <MyGames />
             </ProtectedRoute>
           }
         />

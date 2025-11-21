@@ -4,7 +4,14 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import { validateEmail } from '../utils/helpers';
+import PasswordStrength from '../components/ui/PasswordStrength';
+import {
+  validateEmail,
+  validatePassword,
+  validateFullName,
+  validateAge,
+  formatPhone
+} from '../utils/validators';
 import { AuthAPI } from '../services/api';
 import './Register.css';
 
@@ -23,6 +30,7 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -34,15 +42,19 @@ export default function Register() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    let newValue = value;
+
     // Format phone number
     if (name === 'phone') {
-      let formatted = value.replace(/\D/g, '');
-      if (formatted.length >= 10) {
-        formatted = `(${formatted.slice(0, 2)}) ${formatted.slice(2, 7)}-${formatted.slice(7, 11)}`;
-      }
-      setFormData(prev => ({ ...prev, [name]: formatted }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      newValue = formatPhone(value);
+    }
+
+    setFormData(prev => ({ ...prev, [name]: newValue }));
+
+    // Validate password in real-time
+    if (name === 'password') {
+      const validation = validatePassword(newValue);
+      setPasswordValidation(validation);
     }
 
     // Clear error when user types
@@ -68,30 +80,38 @@ export default function Register() {
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.name || formData.name.length < 3) {
-      newErrors.name = 'Nome deve ter pelo menos 3 caracteres';
+    // Validate full name
+    const nameValidation = validateFullName(formData.name);
+    if (!nameValidation.valid) {
+      newErrors.name = nameValidation.message;
     }
 
-    if (!validateEmail(formData.email)) {
-      newErrors.email = 'Email inválido';
+    // Validate email
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.valid) {
+      newErrors.email = emailValidation.message;
     }
 
+    // Validate birth date
     if (!formData.birthDate) {
       newErrors.birthDate = 'Data de nascimento é obrigatória';
     } else {
-      const age = calculateAge(formData.birthDate);
-      if (age < 13) {
-        newErrors.birthDate = 'Você deve ter pelo menos 13 anos';
-      } else if (age > 120) {
-        newErrors.birthDate = 'Data de nascimento inválida';
+      const ageValidation = validateAge(formData.birthDate, 13, 120);
+      if (!ageValidation.valid) {
+        newErrors.birthDate = ageValidation.message;
       }
     }
 
-    if (formData.password.length < 8) {
-      newErrors.password = 'Senha deve ter pelo menos 8 caracteres';
+    // Validate password
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.valid) {
+      newErrors.password = passwordValidation.message;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    // Validate password confirmation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Por favor, confirme sua senha';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'As senhas não coincidem';
     }
 
@@ -194,16 +214,24 @@ export default function Register() {
             required
           />
 
-          <Input
-            label="Senha"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            error={errors.password}
-            placeholder="Mínimo 8 caracteres"
-            required
-          />
+          <div>
+            <Input
+              label="Senha"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="Mínimo 8 caracteres"
+              required
+            />
+            {passwordValidation && (
+              <PasswordStrength
+                password={formData.password}
+                validation={passwordValidation}
+              />
+            )}
+          </div>
 
           <Input
             label="Confirmar Senha"

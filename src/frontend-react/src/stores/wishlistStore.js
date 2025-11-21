@@ -20,6 +20,8 @@ export const useWishlistStore = create((set, get) => ({
     const result = await WishlistAPI.add(jogoId);
     if (result.success) {
       await get().fetchWishlist();
+    } else {
+      throw new Error(result.error || 'Erro ao adicionar à lista de desejos');
     }
     return result;
   },
@@ -28,13 +30,15 @@ export const useWishlistStore = create((set, get) => ({
     const result = await WishlistAPI.remove(jogoId);
     if (result.success) {
       await get().fetchWishlist();
+    } else {
+      throw new Error(result.error || 'Erro ao remover da lista de desejos');
     }
     return result;
   },
 
   isInWishlist: (jogoId) => {
     const { wishlist } = get();
-    return wishlist.some(item => item.fkJogo === jogoId);
+    return wishlist.some(item => item.id === jogoId);
   },
 
   clearWishlist: () => {

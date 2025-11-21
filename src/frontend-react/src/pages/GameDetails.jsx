@@ -3,20 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
 import StarRating from '../components/ui/StarRating';
+import Modal from '../components/ui/Modal';
+import SpoilerText from '../components/ui/SpoilerText';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
 import { useToast } from '../hooks/useToast';
-import { GameAPI, ReviewAPI } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
+import { useCategory } from '../hooks/useCategory';
+import { GameAPI, ReviewAPI, UserAPI } from '../services/api';
 import { formatCurrency, formatDate, getGameImage, generateAvatar } from '../utils/helpers';
 import './GameDetails.css';
-
-const CATEGORIAS = {
-  1: 'Ação', 2: 'RPG', 3: 'Aventura', 4: 'Estratégia', 5: 'Esporte',
-  6: 'Corrida', 7: 'Terror', 8: 'Puzzle', 9: 'Simulação', 10: 'Plataforma',
-  11: 'Luta', 12: 'Tiro', 13: 'Musical', 14: 'Ação', 15: 'Casual'
-};
-
-const getCategoryName = (fkCategoria) => CATEGORIAS[fkCategoria] || 'Outros';
 
 export default function GameDetails() {
   const { id } = useParams();
@@ -24,16 +20,33 @@ export default function GameDetails() {
   const { addToCart } = useCart();
   const { wishlist: wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const { showSuccess, showError } = useToast();
+  const { currentUser: user } = useAuth();
+  const { getCategoryName } = useCategory();
 
   const [game, setGame] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [activeTab, setActiveTab] = useState('description');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Estados para avaliação
+  const [userOwnsGame, setUserOwnsGame] = useState(false);
+  const [userReview, setUserReview] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ nota: 0, comentario: '', hasSpoiler: false });
+
   useEffect(() => {
-    loadGameDetails();
-    loadReviews();
-  }, [id]);
+    const initializePage = async () => {
+      await loadGameDetails();
+      await loadReviews();
+      await updateGameRating();
+      if (user) {
+        await checkGameOwnership();
+        await checkUserReview();
+      }
+    };
+
+    initializePage();
+  }, [id, user]);
 
   const loadGameDetails = async () => {
     setIsLoading(true);
@@ -71,6 +84,91 @@ export default function GameDetails() {
     }
   };
 
+  const checkGameOwnership = async () => {
+    try {
+      const result = await UserAPI.getMyGames();
+      if (result.success && result.data) {
+        const owns = result.data.some(item => item.jogo.id === parseInt(id));
+        setUserOwnsGame(owns);
+      }
+    } catch (error) {
+      console.error('Error checking ownership:', error);
+      setUserOwnsGame(false);
+    }
+  };
+
+  const checkUserReview = async () => {
+    try {
+      const result = await ReviewAPI.getByGame(id);
+      if (result.success && result.data) {
+        const reviewsArray = Array.isArray(result.data) ? result.data : [result.data];
+        const myReview = reviewsArray.find(r => r.fk_usuario === user?.id);
+        setUserReview(myReview || null);
+        if (myReview) {
+          const comentario = myReview.comentario || '';
+          const hasSpoiler = comentario.includes('[SPOILER]');
+          setReviewForm({
+            nota: myReview.nota,
+            comentario,
+            hasSpoiler
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking user review:', error);
+      setUserReview(null);
+    }
+  };
+
+  const updateGameRating = async () => {
+    try {
+      const ratingResult = await ReviewAPI.getGameRating(id);
+      if (ratingResult.success && ratingResult.data) {
+        setGame(prev => ({
+          ...prev,
+          avaliacao_media: ratingResult.data.media || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating game rating:', error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewForm.nota === 0) {
+      showError('Selecione uma nota de 1 a 5 estrelas');
+      return;
+    }
+
+    try {
+      // Marcar comentário com spoiler se checkbox estiver marcado
+      let comentarioFinal = reviewForm.comentario;
+      if (reviewForm.hasSpoiler && comentarioFinal) {
+        // Remove marcações antigas de spoiler se existirem
+        comentarioFinal = comentarioFinal.replace(/\[SPOILER\]/g, '').replace(/\[\/SPOILER\]/g, '');
+        // Adiciona nova marcação envolvendo todo o comentário
+        comentarioFinal = `[SPOILER]${comentarioFinal}[/SPOILER]`;
+      }
+
+      const result = userReview
+        ? await ReviewAPI.update(id, reviewForm.nota, comentarioFinal)
+        : await ReviewAPI.create(id, reviewForm.nota, comentarioFinal);
+
+      if (result.success) {
+        showSuccess(userReview ? 'Avaliação atualizada!' : 'Avaliação criada!');
+        setShowReviewModal(false);
+        setReviewForm({ nota: 0, comentario: '', hasSpoiler: false });
+        await loadReviews();
+        await checkUserReview();
+        await updateGameRating();
+      } else {
+        showError(result.error || 'Erro ao salvar avaliação');
+      }
+    } catch (error) {
+      showError('Erro ao salvar avaliação');
+    }
+  };
+
   const handleAddToCart = async () => {
     try {
       await addToCart(game.id);
@@ -90,7 +188,7 @@ export default function GameDetails() {
   };
 
   const handleToggleWishlist = async () => {
-    const isInWishlist = wishlistItems.some(item => item.fkJogo === game.id);
+    const isInWishlist = wishlistItems.some(item => item.id === game.id);
 
     try {
       if (isInWishlist) {
@@ -121,7 +219,7 @@ export default function GameDetails() {
     );
   }
 
-  const isInWishlist = wishlistItems.some(item => item.fkJogo === game.id);
+  const isInWishlist = wishlistItems.some(item => item.id === game.id);
   const imagemUrl = getGameImage(game.nome || game.titulo);
 
   return (
@@ -196,6 +294,23 @@ export default function GameDetails() {
 
                   {activeTab === 'reviews' && (
                     <div className="reviews-content">
+                      {/* Botão de avaliar */}
+                      {user && userOwnsGame && (
+                        <div className="review-actions">
+                          <Button onClick={() => setShowReviewModal(true)}>
+                            {userReview ? '✏️ Editar Minha Avaliação' : '⭐ Avaliar Este Jogo'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Mensagem para quem não possui o jogo */}
+                      {user && !userOwnsGame && (
+                        <div className="no-ownership-message">
+                          💡 Você precisa comprar este jogo para poder avaliá-lo.
+                        </div>
+                      )}
+
+                      {/* Lista de avaliações */}
                       {reviews.length === 0 ? (
                         <div className="no-reviews">
                           <p>Ainda não há avaliações para este jogo.</p>
@@ -223,7 +338,9 @@ export default function GameDetails() {
                                   <StarRating rating={review.nota || 0} />
                                 </div>
                               </div>
-                              <p className="review-comment">{review.comentario || ''}</p>
+                              <div className="review-comment">
+                                <SpoilerText text={review.comentario || ''} />
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -236,6 +353,57 @@ export default function GameDetails() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Avaliação */}
+      <Modal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        title={userReview ? 'Editar Avaliação' : 'Avaliar Jogo'}
+      >
+        <div className="review-form">
+          <div className="rating-section">
+            <label>Sua Nota:</label>
+            <StarRating
+              rating={reviewForm.nota}
+              interactive={true}
+              onRate={(value) => setReviewForm({ ...reviewForm, nota: value })}
+            />
+          </div>
+
+          <div className="comment-section">
+            <label>Comentário (opcional):</label>
+            <textarea
+              value={reviewForm.comentario}
+              onChange={(e) => setReviewForm({ ...reviewForm, comentario: e.target.value })}
+              placeholder="Compartilhe sua experiência com este jogo..."
+              rows={5}
+            />
+          </div>
+
+          <div className="spoiler-checkbox-section">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={reviewForm.hasSpoiler}
+                onChange={(e) => setReviewForm({ ...reviewForm, hasSpoiler: e.target.checked })}
+              />
+              <span>⚠️ Este comentário contém spoilers</span>
+            </label>
+            <p className="spoiler-help-text">
+              Marque esta opção se seu comentário revelar detalhes importantes da história
+            </p>
+          </div>
+
+          <div className="modal-actions">
+            <Button variant="secondary" onClick={() => setShowReviewModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmitReview}>
+              {userReview ? 'Atualizar' : 'Enviar'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 }

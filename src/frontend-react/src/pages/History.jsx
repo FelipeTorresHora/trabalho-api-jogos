@@ -4,20 +4,14 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import StarRating from '../components/ui/StarRating';
 import { useToast } from '../hooks/useToast';
+import { useCategory } from '../hooks/useCategory';
 import { SaleAPI, GameAPI, CartAPI, ReviewAPI } from '../services/api';
 import { formatCurrency, formatDateTime, formatDate, getGameImage, getPaymentMethodIcon, generateAvatar } from '../utils/helpers';
 import './History.css';
 
-const CATEGORIAS = {
-  1: 'Ação', 2: 'RPG', 3: 'Aventura', 4: 'Estratégia', 5: 'Esporte',
-  6: 'Corrida', 7: 'Terror', 8: 'Puzzle', 9: 'Simulação', 10: 'Plataforma',
-  11: 'Luta', 12: 'Tiro', 13: 'Musical', 14: 'Ação', 15: 'Casual'
-};
-
-const getCategoryName = (fkCategoria) => CATEGORIAS[fkCategoria] || 'Outros';
-
 export default function History() {
   const { showSuccess, showError } = useToast();
+  const { getCategoryName } = useCategory();
 
   const [orders, setOrders] = useState([]);
   const [expandedOrders, setExpandedOrders] = useState(new Set());

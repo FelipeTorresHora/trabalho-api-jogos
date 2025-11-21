@@ -2,19 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { useCart } from '../hooks/useCart';
 import { useToast } from '../hooks/useToast';
-import { GameAPI } from '../services/api';
+import { useCategory } from '../hooks/useCategory';
+import { GameAPI, ReviewAPI } from '../services/api';
 import { formatCurrency, getGameImage } from '../utils/helpers';
 import './Cart.css';
-
-const CATEGORIAS = {
-  1: 'Ação', 2: 'RPG', 3: 'Aventura', 4: 'Estratégia', 5: 'Esporte',
-  6: 'Corrida', 7: 'Terror', 8: 'Puzzle', 9: 'Simulação', 10: 'Plataforma',
-  11: 'Luta', 12: 'Tiro', 13: 'Musical', 14: 'Ação', 15: 'Casual'
-};
-
-const getCategoryName = (fkCategoria) => CATEGORIAS[fkCategoria] || 'Outros';
 
 const renderStars = (rating) => {
   return Array.from({ length: 5 }, (_, i) => (
@@ -26,9 +20,12 @@ export default function Cart() {
   const navigate = useNavigate();
   const { items, removeItem, refreshCart } = useCart();
   const { showSuccess, showError } = useToast();
+  const { getCategoryName } = useCategory();
 
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   useEffect(() => {
     loadCartItems();
@@ -42,9 +39,22 @@ export default function Cart() {
         items.map(async (item) => {
           try {
             const result = await GameAPI.getById(item.fkJogo);
+            const jogo = result.success ? result.data : null;
+
+            // Buscar rating do jogo
+            let avaliacaoMedia = 0;
+            if (jogo) {
+              try {
+                const ratingResult = await ReviewAPI.getGameRating(item.fkJogo);
+                avaliacaoMedia = ratingResult?.data?.media || 0;
+              } catch (error) {
+                console.error(`Error loading rating for game ${item.fkJogo}:`, error);
+              }
+            }
+
             return {
               ...item,
-              jogo: result.success ? result.data : null
+              jogo: jogo ? { ...jogo, avaliacao_media: avaliacaoMedia } : null
             };
           } catch (error) {
             console.error(`Error fetching game ${item.fkJogo}:`, error);
@@ -65,15 +75,29 @@ export default function Cart() {
     }
   };
 
-  const handleRemoveItem = async (gameId) => {
-    if (!window.confirm('Deseja remover este item do carrinho?')) return;
+  const handleRemoveItem = (gameId, gameName) => {
+    setItemToRemove({ id: gameId, name: gameName });
+    setShowRemoveDialog(true);
+  };
+
+  const confirmRemoveItem = async () => {
+    if (!itemToRemove) return;
 
     try {
-      await removeItem(gameId);
+      await removeItem(itemToRemove.id);
       showSuccess('Item removido do carrinho');
+      setShowRemoveDialog(false);
+      setItemToRemove(null);
     } catch (error) {
       showError('Erro ao remover item');
+      setShowRemoveDialog(false);
+      setItemToRemove(null);
     }
+  };
+
+  const cancelRemoveItem = () => {
+    setShowRemoveDialog(false);
+    setItemToRemove(null);
   };
 
   const handleCheckout = () => {
@@ -178,7 +202,7 @@ export default function Cart() {
                       <div className="cart-item-price">{formatCurrency(preco)}</div>
                       <button
                         className="remove-btn"
-                        onClick={() => handleRemoveItem(item.fkJogo)}
+                        onClick={() => handleRemoveItem(item.fkJogo, nomeJogo)}
                       >
                         Remover
                       </button>
@@ -215,6 +239,18 @@ export default function Cart() {
           </div>
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showRemoveDialog}
+        onConfirm={confirmRemoveItem}
+        onCancel={cancelRemoveItem}
+        title="Remover item do carrinho"
+        message={`Tem certeza que deseja remover "${itemToRemove?.name}" do carrinho?`}
+        confirmText="Remover"
+        cancelText="Cancelar"
+        type="warning"
+      />
     </Layout>
   );
 }

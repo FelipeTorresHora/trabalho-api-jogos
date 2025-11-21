@@ -423,6 +423,18 @@ export const ReviewAPI = {
         error: error.response?.data?.message || 'Erro ao deletar avaliação'
       };
     }
+  },
+
+  async getGameRating(gameId) {
+    try {
+      const response = await apiClient.get(`/avaliacoes/media/${gameId}`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar média de avaliações'
+      };
+    }
   }
 };
 
@@ -506,6 +518,18 @@ export const UserAPI = {
       return { success: false, error: 'Usuário não autenticado' };
     }
     return await this.update(currentUser.id, userData);
+  },
+
+  async getMyGames() {
+    try {
+      const response = await apiClient.get('/usuarios/my/games');
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar seus jogos'
+      };
+    }
   }
 };
 
