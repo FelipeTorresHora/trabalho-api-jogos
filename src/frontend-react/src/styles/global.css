@@ -52,11 +52,18 @@
   /* Colors */
   --bg-primary: #FFFFFF;
   --bg-surface: #F5F5F5;
+  --bg-secondary: #F0F0F0;
+  --bg-card: #FAFAFA;
+  --bg-hover: #E8E8E8;
+  --border-color: #D0D0D0;
   --color-accent: #E60012;
   --color-accent-hover: #C50010;
+  --color-danger: #D32F2F;
+  --color-danger-hover: #B71C1C;
   --text-primary: #000000;
   --text-secondary: #666666;
   --color-error: #D32F2F;
+  --color-success: #2E7D32;
 }
 
 [data-theme="classic"] .header {
@@ -89,7 +96,7 @@
 }
 
 [data-theme="classic"] .star.empty {
-  color: #E0E0E0;
+  color: #BDBDBD;
 }
 
 /* Global Reset */

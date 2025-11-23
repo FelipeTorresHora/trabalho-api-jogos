@@ -93,18 +93,25 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  width: 70px;
-  height: 34px;
+  width: 64px;
+  height: 36px;
   background: var(--bg-surface);
-  border-radius: 17px;
-  padding: 3px;
+  border-radius: 18px;
+  padding: 2px;
   cursor: pointer;
-  transition: background 0.3s ease;
-  border: 2px solid var(--bg-surface);
+  transition: all 0.3s ease;
+  border: 2px solid rgba(189, 178, 255, 0.3);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .theme-toggle:hover {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgba(189, 178, 255, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .theme-toggle input[type="checkbox"] {
@@ -117,47 +124,60 @@
 .theme-option {
   position: relative;
   z-index: 2;
-  font-size: 16px;
-  width: 28px;
-  height: 28px;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+  filter: grayscale(0.3);
 }
 
-.theme-option.dark-mode {
+.theme-option.light-mode {
   opacity: 1;
 }
 
-.theme-option.classic-mode {
-  opacity: 0.4;
+.theme-option.dark-mode {
+  opacity: 0.5;
 }
 
 /* Slider que desliza */
 .theme-slider {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
   width: 32px;
-  height: 28px;
+  height: 32px;
   background: var(--color-accent);
-  border-radius: 14px;
-  transition: transform 0.3s ease;
+  border-radius: 16px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle:active .theme-slider {
+  transform: scale(0.95);
 }
 
 /* Quando checkbox marcado (Classic Mode) */
 .theme-toggle input:checked ~ .theme-slider {
-  transform: translateX(32px);
+  transform: translateX(28px);
+}
+
+.theme-toggle input:checked ~ .theme-option.light-mode {
+  opacity: 0.5;
+  filter: grayscale(0.3);
 }
 
 .theme-toggle input:checked ~ .theme-option.dark-mode {
-  opacity: 0.4;
+  opacity: 1;
+  filter: grayscale(0);
 }
 
-.theme-toggle input:checked ~ .theme-option.classic-mode {
+.theme-toggle input:not(:checked) ~ .theme-option.light-mode {
   opacity: 1;
+  filter: grayscale(0);
 }
 
 .cart-badge {
@@ -215,17 +235,25 @@
 
   /* Theme Toggle Responsivo */
   .theme-toggle {
-    width: 64px;
-    height: 30px;
+    width: 56px;
+    height: 32px;
+    border-radius: 16px;
+  }
+
+  .theme-option {
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
   }
 
   .theme-slider {
     width: 28px;
-    height: 24px;
+    height: 28px;
+    border-radius: 14px;
   }
 
   .theme-toggle input:checked ~ .theme-slider {
-    transform: translateX(30px);
+    transform: translateX(24px);
   }
 }
 

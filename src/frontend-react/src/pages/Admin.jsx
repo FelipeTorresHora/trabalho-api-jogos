@@ -523,15 +523,21 @@ export default function Admin() {
               <div className="charts-grid">
                 <div className="chart-card">
                   <h3>Top 5 Jogos Mais Vendidos</h3>
-                  <canvas id="topGamesChart" height="300"></canvas>
+                  <div className="chart-wrapper">
+                    <canvas id="topGamesChart"></canvas>
+                  </div>
                 </div>
                 <div className="chart-card">
                   <h3>Vendas por Categoria</h3>
-                  <canvas id="categoriesChart" height="300"></canvas>
+                  <div className="chart-wrapper">
+                    <canvas id="categoriesChart"></canvas>
+                  </div>
                 </div>
                 <div className="chart-card">
                   <h3>Vendas por Empresa</h3>
-                  <canvas id="brandsChart" height="300"></canvas>
+                  <div className="chart-wrapper">
+                    <canvas id="brandsChart"></canvas>
+                  </div>
                 </div>
               </div>
             </div>

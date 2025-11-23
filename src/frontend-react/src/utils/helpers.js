@@ -1,4 +1,5 @@
 // Aventurem - Utility Functions
+import gameImagesMap from '../data/gameImages.json';
 
 // LocalStorage Management
 export const Storage = {
@@ -150,36 +151,11 @@ export function generateActivationKey() {
 
 // Get image path for game
 export function getGameImage(gameName) {
-  const imageMap = {
-    'A Lenda do Herói': 'a_lenda_do_heroi.jpg',
-    'Half-Life: Alyx': 'alyx.jpg',
-    'Among Us': 'among_us.jpg',
-    'Bloodborne': 'bloodborne.jpg',
-    'Call of Duty: Modern Warfare': 'call_of_duty.jpg',
-    'Cyberpunk 2077': 'cyberpunk.jpg',
-    'Enigma do Medo': 'enigma_do_medo.jpg',
-    'Fallout 4': 'fallout.jpg',
-    'Grand Theft Auto V': 'gta_v.jpg',
-    'Horizon Zero Dawn': 'horizon.jpg',
-    'Like a Dragon': 'like_a_dragon.jpg',
-    'Minecraft': 'minecraft.jpg',
-    'Monster Hunter: World': 'monster_hunter.jpg',
-    'Persona 5 Royal': 'persona_royal.jpg',
-    'Portal 2': 'portal2.jpg',
-    'Red Dead Redemption 2': 'red_dead_redemption2.jpg',
-    'Resident Evil Village': 'resident_evil.jpg',
-    'Sekiro: Shadows Die Twice': 'sekiro.jpg',
-    'The Elder Scrolls V: Skyrim': 'skyrim.jpg',
-    'Stardew Valley': 'stardew_valley.jpg',
-    'The Legend of Zelda: Breath of the Wild': 'the_legend_of_zelda.jpg',
-    'The Witcher 3: Wild Hunt': 'the_witcher.jpg'
-  };
-
-  const fileName = imageMap[gameName];
+  const fileName = gameImagesMap[gameName];
   if (fileName) {
     return `/src/assets/images/${fileName}`;
   }
 
   // Default placeholder
-  return '/src/assets/images/placeholder.jpg';
+  return '/src/assets/images/placeholder.svg';
 }

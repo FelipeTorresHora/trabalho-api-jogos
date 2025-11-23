@@ -15,7 +15,7 @@ import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
   const { getCategoryName } = useCategory();
   const { getCompanyName } = useCompany();
@@ -174,7 +174,7 @@ export default function Home() {
 
   const handleAddToCart = async (gameId) => {
     try {
-      await addItem(gameId);
+      await addToCart(gameId);
       showSuccess('Jogo adicionado ao carrinho!');
       navigate('/cart');
     } catch (error) {

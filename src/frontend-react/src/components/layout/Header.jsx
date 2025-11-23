@@ -90,7 +90,7 @@ function Header({ onSearch }) {
 
           <div className="theme-toggle-container">
             <label className="theme-toggle" htmlFor="themeToggle">
-              <span className="theme-option dark-mode">☀️</span>
+              <span className="theme-option light-mode">🌙</span>
               <input
                 type="checkbox"
                 id="themeToggle"
@@ -99,7 +99,7 @@ function Header({ onSearch }) {
                 aria-label="Alternar tema"
               />
               <span className="theme-slider"></span>
-              <span className="theme-option classic-mode">🌙</span>
+              <span className="theme-option dark-mode">☀️</span>
             </label>
           </div>
 
