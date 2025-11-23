@@ -644,14 +644,8 @@ export default function Admin() {
           {/* Games Tab */}
           {activeTab === 'games' && (
             <div className="admin-tab-content">
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <div style={{ marginBottom: '16px' }}>
                 <Button onClick={() => handleOpenGameModal()}>Criar Novo Jogo</Button>
-                <Button variant="secondary" onClick={handleDebugImages}>
-                  🔍 Debug Imagens
-                </Button>
-                <Button variant="danger" onClick={handleClearImages}>
-                  🗑️ Limpar Mapeamentos
-                </Button>
               </div>
               <div className="table-container">
                 <table className="admin-table">

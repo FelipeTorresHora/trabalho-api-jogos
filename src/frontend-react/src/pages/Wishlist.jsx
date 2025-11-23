@@ -109,6 +109,9 @@ export default function Wishlist() {
               <p className="text-secondary">
                 Adicione jogos que você deseja comprar mais tarde!
               </p>
+              <Button onClick={() => navigate('/home')}>
+                Continuar Comprando
+              </Button>
             </div>
           ) : (
             <div className="wishlist-grid">

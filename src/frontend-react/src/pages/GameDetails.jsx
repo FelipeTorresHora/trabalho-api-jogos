@@ -10,6 +10,7 @@ import { useWishlist } from '../hooks/useWishlist';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
 import { useCategory } from '../hooks/useCategory';
+import { useCompany } from '../hooks/useCompany';
 import { GameAPI, ReviewAPI, UserAPI } from '../services/api';
 import { formatCurrency, formatDate, getGameImage, generateAvatar } from '../utils/helpers';
 import './GameDetails.css';
@@ -22,6 +23,7 @@ export default function GameDetails() {
   const { showSuccess, showError } = useToast();
   const { currentUser: user } = useAuth();
   const { getCategoryName } = useCategory();
+  const { getCompanyName } = useCompany();
 
   const [game, setGame] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -246,6 +248,7 @@ export default function GameDetails() {
                   {getCategoryName(game.fkCategoria)}
                 </span>
                 <h1 className="game-details-title">{game.nome || game.titulo}</h1>
+                <div className="game-company-name">{getCompanyName(game.fkEmpresa)}</div>
                 <div className="game-details-rating">
                   <StarRating rating={game.avaliacao_media || 0} />
                   <span>{(game.avaliacao_media || 0).toFixed(1)} estrelas</span>

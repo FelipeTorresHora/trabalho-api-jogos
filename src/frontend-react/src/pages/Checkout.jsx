@@ -10,6 +10,7 @@ import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useCategory } from '../hooks/useCategory';
+import { useCompany } from '../hooks/useCompany';
 import { GameAPI, SaleAPI } from '../services/api';
 import { formatCurrency, getGameImage } from '../utils/helpers';
 import {
@@ -31,6 +32,7 @@ export default function Checkout() {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
   const { getCategoryName } = useCategory();
+  const { getCompanyName } = useCompany();
   const { showSuccess, showError } = useToast();
 
   const [cartItems, setCartItems] = useState([]);
@@ -406,6 +408,7 @@ export default function Checkout() {
                   const titulo = jogo.nome || jogo.titulo || 'Jogo';
                   const imagemUrl = getGameImage(titulo);
                   const categoria = getCategoryName(jogo.fkCategoria);
+                  const empresa = getCompanyName(jogo.fkEmpresa);
                   const preco = jogo.preco || 0;
 
                   return (
@@ -413,7 +416,7 @@ export default function Checkout() {
                       <img src={imagemUrl} alt={titulo} className="order-item-image" />
                       <div className="order-item-info">
                         <div className="order-item-title">{titulo}</div>
-                        <div className="order-item-details">{categoria} • Qty: 1</div>
+                        <div className="order-item-details">{empresa} • {categoria}</div>
                         <div className="order-item-price">{formatCurrency(preco)}</div>
                       </div>
                     </div>
