@@ -6,11 +6,12 @@ import Select from '../components/ui/Select';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Pagination from '../components/ui/Pagination';
+import FileInput from '../components/ui/FileInput';
 import { useToast } from '../hooks/useToast';
 import { useCategory } from '../hooks/useCategory';
 import { useCompany } from '../hooks/useCompany';
 import { GameAPI, UserAPI, CompanyAPI, SaleAPI, CartAPI, ReviewAPI } from '../services/api';
-import { formatCurrency, formatDate, getGameImage, generateAvatar } from '../utils/helpers';
+import { formatCurrency, formatDate, getGameImage, generateAvatar, setGameImage, toSnakeCase, debugGameImages, clearDynamicImages } from '../utils/helpers';
 import { Chart } from 'chart.js/auto';
 import './Admin.css';
 
@@ -72,6 +73,8 @@ export default function Admin() {
     fkEmpresa: '',
     destaque: false
   });
+
+  const [selectedGameImage, setSelectedGameImage] = useState(null);
 
   const [companyFormData, setCompanyFormData] = useState({
     nome: ''
@@ -351,6 +354,7 @@ export default function Admin() {
         destaque: false
       });
     }
+    setSelectedGameImage(null);
     setShowGameModal(true);
   };
 
@@ -376,8 +380,38 @@ export default function Admin() {
       }
 
       if (result.success) {
-        showSuccess(editingGame ? 'Jogo atualizado!' : 'Jogo criado!');
+        // Processar imagem se foi selecionada
+        if (selectedGameImage) {
+          const gameName = gameFormData.nome;
+          const fileExtension = selectedGameImage.name.split('.').pop();
+          const snakeCaseName = toSnakeCase(gameName);
+          const newFileName = `${snakeCaseName}.${fileExtension}`;
+          const imagePath = `/uploaded-games/${newFileName}`;
+
+          // Fazer download automático da imagem renomeada
+          const url = URL.createObjectURL(selectedGameImage);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = newFileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          // Salvar mapeamento no localStorage
+          setGameImage(gameName, imagePath);
+
+          // Mostrar instrução
+          showSuccess(
+            `Jogo ${editingGame ? 'atualizado' : 'criado'}! ` +
+            `IMPORTANTE: Mova o arquivo "${newFileName}" para a pasta "public/uploaded-games/"`
+          );
+        } else {
+          showSuccess(editingGame ? 'Jogo atualizado!' : 'Jogo criado!');
+        }
+
         setShowGameModal(false);
+        setSelectedGameImage(null);
         await loadGames();
         await loadSales();
       } else {
@@ -481,6 +515,19 @@ export default function Admin() {
     setShowDeleteGameDialog(false);
     setShowDeleteCompanyDialog(false);
     setItemToDelete(null);
+  };
+
+  // Debug functions for images
+  const handleDebugImages = () => {
+    const mappings = debugGameImages();
+    showSuccess(`Debug completo! Verifique o console (F12) para detalhes. Total: ${Object.keys(mappings).length} mapeamentos`);
+  };
+
+  const handleClearImages = () => {
+    if (window.confirm('Tem certeza que deseja limpar TODOS os mapeamentos de imagens dinâmicas?')) {
+      clearDynamicImages();
+      showSuccess('Mapeamentos de imagens limpos! Recarregue a página.');
+    }
   };
 
   return (
@@ -597,7 +644,15 @@ export default function Admin() {
           {/* Games Tab */}
           {activeTab === 'games' && (
             <div className="admin-tab-content">
-              <Button onClick={() => handleOpenGameModal()}>Criar Novo Jogo</Button>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <Button onClick={() => handleOpenGameModal()}>Criar Novo Jogo</Button>
+                <Button variant="secondary" onClick={handleDebugImages}>
+                  🔍 Debug Imagens
+                </Button>
+                <Button variant="danger" onClick={handleClearImages}>
+                  🗑️ Limpar Mapeamentos
+                </Button>
+              </div>
               <div className="table-container">
                 <table className="admin-table">
                   <thead>
@@ -755,6 +810,23 @@ export default function Admin() {
             rows={4}
             required
           />
+          <FileInput
+            label="Imagem do Jogo"
+            onChange={setSelectedGameImage}
+          />
+          {selectedGameImage && (
+            <div style={{
+              fontSize: '0.85rem',
+              color: 'var(--text-secondary)',
+              marginTop: '-8px',
+              marginBottom: '12px',
+              padding: '8px',
+              background: 'var(--bg-secondary)',
+              borderRadius: '4px'
+            }}>
+              ℹ️ A imagem será baixada automaticamente. Mova-a para a pasta <code>public/uploaded-games/</code>
+            </div>
+          )}
           <label>
             <input
               type="checkbox"

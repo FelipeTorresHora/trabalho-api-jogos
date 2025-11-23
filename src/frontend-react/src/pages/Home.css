@@ -303,10 +303,29 @@
 
 .star {
   font-size: 1.2rem;
+  color: #d1d5db; /* Cor padrão para estrelas vazias */
 }
 
 .star.filled {
+  color: #ffd700; /* Dourado para estrelas preenchidas */
+}
+
+/* Tema escuro */
+[data-theme="dark"] .star {
+  color: #4b5563;
+}
+
+[data-theme="dark"] .star.filled {
   color: #ffd700;
+}
+
+/* Tema claro */
+[data-theme="classic"] .star {
+  color: #9ca3af;
+}
+
+[data-theme="classic"] .star.filled {
+  color: #fbbf24;
 }
 
 @media (max-width: 768px) {

@@ -151,11 +151,94 @@ export function generateActivationKey() {
 
 // Get image path for game
 export function getGameImage(gameName) {
+  // 1. Verificar localStorage primeiro (jogos novos com upload)
+  try {
+    const dynamicImages = JSON.parse(localStorage.getItem('dynamicGameImages') || '{}');
+    if (dynamicImages[gameName]) {
+      return dynamicImages[gameName];
+    }
+  } catch (error) {
+    console.error('Error reading dynamic game images:', error);
+  }
+
+  // 2. Verificar JSON estático (jogos antigos)
   const fileName = gameImagesMap[gameName];
   if (fileName) {
     return `/src/assets/images/${fileName}`;
   }
 
-  // Default placeholder
+  // 3. Default placeholder
   return '/src/assets/images/placeholder.svg';
+}
+
+// Add or update game image mapping in localStorage
+export function setGameImage(gameName, imagePath) {
+  try {
+    const dynamicImages = JSON.parse(localStorage.getItem('dynamicGameImages') || '{}');
+    dynamicImages[gameName] = imagePath;
+    localStorage.setItem('dynamicGameImages', JSON.stringify(dynamicImages));
+    return true;
+  } catch (error) {
+    console.error('Error setting game image:', error);
+    return false;
+  }
+}
+
+// Convert game name to snake_case for filename
+export function toSnakeCase(str) {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[^a-z0-9]+/g, '_') // Substitui caracteres especiais por _
+    .replace(/^_+|_+$/g, ''); // Remove _ do início e fim
+}
+
+// Debug: Get all dynamic game images from localStorage
+export function debugGameImages() {
+  try {
+    const dynamicImages = JSON.parse(localStorage.getItem('dynamicGameImages') || '{}');
+    console.log('=== DEBUG: Dynamic Game Images ===');
+    console.log('Total mappings:', Object.keys(dynamicImages).length);
+    console.log('Mappings:');
+    Object.entries(dynamicImages).forEach(([gameName, imagePath]) => {
+      console.log(`  "${gameName}" → ${imagePath}`);
+      console.log(`    Expected filename: ${toSnakeCase(gameName)}.jpg`);
+    });
+    console.log('================================');
+    return dynamicImages;
+  } catch (error) {
+    console.error('Error reading dynamic game images:', error);
+    return {};
+  }
+}
+
+// Clear all dynamic game images
+export function clearDynamicImages() {
+  try {
+    localStorage.removeItem('dynamicGameImages');
+    console.log('✅ Dynamic game images cleared');
+    return true;
+  } catch (error) {
+    console.error('Error clearing dynamic images:', error);
+    return false;
+  }
+}
+
+// Remove specific game image mapping
+export function removeGameImage(gameName) {
+  try {
+    const dynamicImages = JSON.parse(localStorage.getItem('dynamicGameImages') || '{}');
+    if (dynamicImages[gameName]) {
+      delete dynamicImages[gameName];
+      localStorage.setItem('dynamicGameImages', JSON.stringify(dynamicImages));
+      console.log(`✅ Removed mapping for "${gameName}"`);
+      return true;
+    }
+    console.log(`⚠️ No mapping found for "${gameName}"`);
+    return false;
+  } catch (error) {
+    console.error('Error removing game image:', error);
+    return false;
+  }
 }

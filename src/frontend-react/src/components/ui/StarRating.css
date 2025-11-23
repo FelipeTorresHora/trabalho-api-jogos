@@ -1,11 +1,40 @@
+/* Estilos base para estrelas */
+.rating .star {
+  font-size: 1.5rem;
+  color: #ffd700;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.rating .star.empty {
+  color: #d1d5db;
+}
+
+/* Tema escuro - estrelas vazias mais escuras */
+[data-theme="dark"] .rating .star.empty {
+  color: #4b5563;
+}
+
+/* Tema claro - ajuste de contraste */
+[data-theme="classic"] .rating .star.empty {
+  color: #9ca3af;
+}
+
+/* Estrelas interativas */
 .rating-interactive {
   cursor: pointer;
 }
 
 .rating-interactive .star {
-  transition: var(--transition);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .rating-interactive .star:hover {
   transform: scale(1.2);
+}
+
+/* Hover em estrelas vazias */
+.rating-interactive .star.empty:hover {
+  color: #fbbf24;
 }

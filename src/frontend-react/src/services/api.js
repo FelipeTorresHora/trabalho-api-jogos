@@ -117,13 +117,20 @@ export const AuthAPI = {
 
   async register(userData) {
     try {
+      // Converter data de YYYY-MM-DD para DD/MM/YYYY (formato esperado pelo backend)
+      let dataNascimento = null;
+      if (userData.dataNascimento) {
+        const [ano, mes, dia] = userData.dataNascimento.split('-');
+        dataNascimento = `${dia}/${mes}/${ano}`;
+      }
+
       const response = await apiClient.post('/auth/register', {
         nome: userData.name,
         email: userData.email,
         senha: userData.password,
-        telefone: userData.telefone,
-        dataNascimento: userData.dataNascimento,
-        perfilId: userData.perfilId || 2
+        dataNascimento: dataNascimento
+        // Removido: telefone (não existe no backend)
+        // Removido: perfilId (backend define automaticamente como "Cliente")
       });
 
       return { success: true, data: response.data };

@@ -5,6 +5,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import CardBrandIcon from '../components/ui/CardBrandIcon';
+import ErrorModal from '../components/ui/ErrorModal';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -38,6 +39,8 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [cardBrand, setCardBrand] = useState('unknown');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorList, setErrorList] = useState([]);
 
   const [formData, setFormData] = useState({
     email: user?.email || '',
@@ -130,6 +133,13 @@ export default function Checkout() {
       newErrors.email = emailValidation.message;
     }
 
+    // Validate phone
+    if (!formData.phone || formData.phone.trim() === '') {
+      newErrors.phone = 'Telefone é obrigatório';
+    } else if (formData.phone.replace(/\D/g, '').length < 10) {
+      newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
+    }
+
     // Validate card details only if payment method is card
     if (paymentMethod === 'card') {
       // Validate card number
@@ -165,6 +175,14 @@ export default function Checkout() {
     }
 
     setErrors(newErrors);
+
+    // Show modal if there are errors
+    const errorMessages = Object.values(newErrors);
+    if (errorMessages.length > 0) {
+      setErrorList(errorMessages);
+      setShowErrorModal(true);
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
@@ -172,7 +190,6 @@ export default function Checkout() {
     e.preventDefault();
 
     if (!validate()) {
-      showError('Por favor, corrija os erros no formulário');
       return;
     }
 
@@ -418,6 +435,13 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      <ErrorModal
+        isOpen={showErrorModal}
+        errors={errorList}
+        onClose={() => setShowErrorModal(false)}
+        title="Corrija os erros abaixo"
+      />
     </Layout>
   );
 }
