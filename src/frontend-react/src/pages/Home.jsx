@@ -252,10 +252,10 @@ export default function Home() {
                     <h1>{jogo.nome || jogo.titulo}</h1>
                     <p>{jogo.descricao ? jogo.descricao.substring(0, 150) + '...' : ''}</p>
                     <div className="hero-actions">
-                      <Button variant="secondary" onClick={() => handleViewDetails(jogo.id)}>
+                      <Button onClick={() => handleViewDetails(jogo.id)}>
                         Ver Detalhes
                       </Button>
-                      <Button onClick={() => handleAddToCart(jogo.id)}>
+                      <Button variant="secondary" onClick={() => handleAddToCart(jogo.id)}>
                         Comprar
                       </Button>
                     </div>

@@ -125,19 +125,13 @@
 }
 
 .user-avatar,
-.game-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.game-image {
+.admin-game-image {
   width: 40px;
   height: 40px;
   max-width: 40px;
   max-height: 40px;
   border-radius: var(--radius-sm);
+  object-fit: cover;
 }
 
 .role-badge {

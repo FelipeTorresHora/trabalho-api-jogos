@@ -748,7 +748,7 @@ export default function Admin() {
                           <img
                             src={getGameImage(game.nome || game.titulo)}
                             alt={game.nome || game.titulo}
-                            className="game-image"
+                            className="admin-game-image"
                           />
                         </td>
                         <td>{game.nome || game.titulo}</td>
