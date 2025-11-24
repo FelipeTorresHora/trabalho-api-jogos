@@ -60,18 +60,18 @@ export default function Landing() {
               <div className="hero-ctas">
                 <Button
                   size="large"
-                  onClick={() => navigate('/register')}
-                  className="cta-primary"
-                >
-                  Criar Conta Grátis
-                </Button>
-                <Button
-                  size="large"
                   variant="secondary"
                   onClick={() => navigate('/login')}
                   className="cta-secondary"
                 >
                   Entrar
+                </Button>
+                <Button
+                  size="large"
+                  onClick={() => navigate('/register')}
+                  className="cta-primary"
+                >
+                  Criar Conta Grátis
                 </Button>
               </div>
             </div>
