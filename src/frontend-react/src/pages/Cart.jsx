@@ -29,7 +29,7 @@ export default function Cart() {
 
   useEffect(() => {
     loadCartItems();
-  }, [items]);
+  }, []);
 
   const loadCartItems = async () => {
     setIsLoading(true);

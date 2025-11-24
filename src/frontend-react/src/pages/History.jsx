@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -10,6 +11,7 @@ import { formatCurrency, formatDateTime, formatDate, getGameImage, getPaymentMet
 import './History.css';
 
 export default function History() {
+  const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   const { getCategoryName } = useCategory();
 
@@ -192,6 +194,9 @@ export default function History() {
     <Layout>
       <div className="history-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="history-title">Histórico de Compras</h1>
 
           <div className="orders-container">

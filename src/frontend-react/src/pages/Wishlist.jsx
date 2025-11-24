@@ -98,6 +98,9 @@ export default function Wishlist() {
     <Layout>
       <div className="wishlist-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="wishlist-title">Minha Lista de Desejos</h1>
 
           {isLoadingWishlist ? (

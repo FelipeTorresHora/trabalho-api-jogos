@@ -28,6 +28,12 @@ export default function Profile() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   useEffect(() => {
     loadProfile();
   }, []);
@@ -57,18 +63,56 @@ export default function Profile() {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+    // Limpar erro do campo ao digitar
+    if (passwordErrors[name]) {
+      setPasswordErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validatePasswordForm = () => {
+    const newErrors = {};
+
+    if (!passwordData.currentPassword) {
+      newErrors.currentPassword = 'Senha atual é obrigatória';
+    }
+
+    if (!passwordData.newPassword) {
+      newErrors.newPassword = 'Nova senha é obrigatória';
+    } else if (passwordData.newPassword.length < 8) {
+      newErrors.newPassword = 'A senha deve ter pelo menos 8 caracteres';
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'As senhas não coincidem';
+    }
+
+    setPasswordErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordBlur = (e) => {
+    const { name, value } = e.target;
+    const newErrors = { ...passwordErrors };
+
+    if (name === 'currentPassword' && !value) {
+      newErrors.currentPassword = 'Senha atual é obrigatória';
+    } else if (name === 'newPassword') {
+      if (!value) {
+        newErrors.newPassword = 'Nova senha é obrigatória';
+      } else if (value.length < 8) {
+        newErrors.newPassword = 'A senha deve ter pelo menos 8 caracteres';
+      }
+    } else if (name === 'confirmPassword' && value !== passwordData.newPassword) {
+      newErrors.confirmPassword = 'As senhas não coincidem';
+    }
+
+    setPasswordErrors(newErrors);
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showError('As senhas não coincidem');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 8) {
-      showError('A senha deve ter pelo menos 8 caracteres');
+    if (!validatePasswordForm()) {
       return;
     }
 
@@ -83,6 +127,11 @@ export default function Profile() {
       if (result.success) {
         showSuccess('Senha alterada com sucesso!');
         setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setPasswordErrors({
           currentPassword: '',
           newPassword: '',
           confirmPassword: ''
@@ -109,6 +158,9 @@ export default function Profile() {
     <Layout>
       <div className="profile-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="profile-title">Meu Perfil</h1>
 
           <div className="profile-content">
@@ -154,6 +206,8 @@ export default function Profile() {
                   name="currentPassword"
                   value={passwordData.currentPassword}
                   onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
+                  error={passwordErrors.currentPassword}
                   required
                 />
                 <Input
@@ -162,6 +216,8 @@ export default function Profile() {
                   name="newPassword"
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
+                  error={passwordErrors.newPassword}
                   placeholder="Mínimo 8 caracteres"
                   required
                 />
@@ -171,6 +227,8 @@ export default function Profile() {
                   name="confirmPassword"
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
+                  error={passwordErrors.confirmPassword}
                   required
                 />
                 <Button type="submit" disabled={isChangingPassword}>

@@ -583,6 +583,9 @@ export default function Admin() {
     <Layout>
       <div className="admin-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="admin-title">Painel Administrativo</h1>
 
           {/* Tabs */}

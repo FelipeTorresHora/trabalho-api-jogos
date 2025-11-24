@@ -3,6 +3,24 @@
   min-height: calc(100vh - 200px);
 }
 
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-bottom: var(--spacing-md);
+  transition: background 0.3s;
+}
+
+.back-button:hover {
+  background: var(--bg-hover);
+}
+
 .page-title {
   font-size: 2rem;
   margin-bottom: var(--spacing-sm);
@@ -178,6 +196,36 @@
 
 .copy-button:active {
   transform: scale(0.95);
+}
+
+.purchase-info {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+}
+
+.purchase-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs) 0;
+}
+
+.purchase-info-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.purchase-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.purchase-value {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .game-actions {

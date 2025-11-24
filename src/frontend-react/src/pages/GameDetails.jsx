@@ -34,7 +34,7 @@ export default function GameDetails() {
   const [userOwnsGame, setUserOwnsGame] = useState(false);
   const [userReview, setUserReview] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewForm, setReviewForm] = useState({ nota: 0, comentario: '', hasSpoiler: false });
+  const [reviewForm, setReviewForm] = useState({ nota: 0, comentario: '' });
 
   useEffect(() => {
     const initializePage = async () => {
@@ -107,12 +107,9 @@ export default function GameDetails() {
         const myReview = reviewsArray.find(r => r.fk_usuario === user?.id);
         setUserReview(myReview || null);
         if (myReview) {
-          const comentario = myReview.comentario || '';
-          const hasSpoiler = comentario.includes('[SPOILER]');
           setReviewForm({
             nota: myReview.nota,
-            comentario,
-            hasSpoiler
+            comentario: myReview.comentario || ''
           });
         }
       }
@@ -143,23 +140,14 @@ export default function GameDetails() {
     }
 
     try {
-      // Marcar comentário com spoiler se checkbox estiver marcado
-      let comentarioFinal = reviewForm.comentario;
-      if (reviewForm.hasSpoiler && comentarioFinal) {
-        // Remove marcações antigas de spoiler se existirem
-        comentarioFinal = comentarioFinal.replace(/\[SPOILER\]/g, '').replace(/\[\/SPOILER\]/g, '');
-        // Adiciona nova marcação envolvendo todo o comentário
-        comentarioFinal = `[SPOILER]${comentarioFinal}[/SPOILER]`;
-      }
-
       const result = userReview
-        ? await ReviewAPI.update(id, reviewForm.nota, comentarioFinal)
-        : await ReviewAPI.create(id, reviewForm.nota, comentarioFinal);
+        ? await ReviewAPI.update(id, reviewForm.nota, reviewForm.comentario)
+        : await ReviewAPI.create(id, reviewForm.nota, reviewForm.comentario);
 
       if (result.success) {
         showSuccess(userReview ? 'Avaliação atualizada!' : 'Avaliação criada!');
         setShowReviewModal(false);
-        setReviewForm({ nota: 0, comentario: '', hasSpoiler: false });
+        setReviewForm({ nota: 0, comentario: '' });
         await loadReviews();
         await checkUserReview();
         await updateGameRating();
@@ -231,7 +219,7 @@ export default function GameDetails() {
           <div className="game-details-content">
             {/* Gallery Section */}
             <div className="gallery-section">
-              <button className="back-button" onClick={() => navigate('/home')}>
+              <button className="back-button" onClick={() => navigate(-1)}>
                 ← Voltar
               </button>
               <img
@@ -381,20 +369,6 @@ export default function GameDetails() {
               placeholder="Compartilhe sua experiência com este jogo..."
               rows={5}
             />
-          </div>
-
-          <div className="spoiler-checkbox-section">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={reviewForm.hasSpoiler}
-                onChange={(e) => setReviewForm({ ...reviewForm, hasSpoiler: e.target.checked })}
-              />
-              <span>⚠️ Este comentário contém spoilers</span>
-            </label>
-            <p className="spoiler-help-text">
-              Marque esta opção se seu comentário revelar detalhes importantes da história
-            </p>
           </div>
 
           <div className="modal-actions">

@@ -63,6 +63,39 @@ export default function Register() {
     }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const newErrors = { ...errors };
+
+    if (name === 'name') {
+      const nameValidation = validateFullName(value);
+      if (!nameValidation.valid) {
+        newErrors.name = nameValidation.message;
+      }
+    } else if (name === 'email') {
+      const emailValidation = validateEmail(value);
+      if (!emailValidation.valid) {
+        newErrors.email = emailValidation.message;
+      }
+    } else if (name === 'password') {
+      const validation = validatePassword(value);
+      if (!validation.valid) {
+        newErrors.password = validation.message;
+      }
+    } else if (name === 'confirmPassword') {
+      if (value !== formData.password) {
+        newErrors.confirmPassword = 'As senhas não coincidem';
+      }
+    } else if (name === 'birthDate' && value) {
+      const ageValidation = validateAge(value, 13, 120);
+      if (!ageValidation.valid) {
+        newErrors.birthDate = ageValidation.message;
+      }
+    }
+
+    setErrors(newErrors);
+  };
+
   const calculateAge = (birthDateString) => {
     const birthDate = new Date(birthDateString);
     const today = new Date();

@@ -5,7 +5,6 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 import CardBrandIcon from '../components/ui/CardBrandIcon';
-import ErrorModal from '../components/ui/ErrorModal';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -41,8 +40,6 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [cardBrand, setCardBrand] = useState('unknown');
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorList, setErrorList] = useState([]);
 
   const [formData, setFormData] = useState({
     email: currentUser?.email || '',
@@ -126,6 +123,66 @@ export default function Checkout() {
     }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const newErrors = { ...errors };
+
+    switch (name) {
+      case 'email':
+        const emailValidation = validateEmail(value);
+        if (!emailValidation.valid) {
+          newErrors.email = emailValidation.message;
+        }
+        break;
+      case 'phone':
+        if (!value || value.trim() === '') {
+          newErrors.phone = 'Telefone é obrigatório';
+        } else if (value.replace(/\D/g, '').length < 10) {
+          newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
+        }
+        break;
+      case 'cardNumber':
+        if (paymentMethod === 'card') {
+          const cardValidation = validateCardNumber(value);
+          if (!cardValidation.valid) {
+            newErrors.cardNumber = cardValidation.message;
+          }
+        }
+        break;
+      case 'cardName':
+        if (paymentMethod === 'card' && (!value || value.length < 3)) {
+          newErrors.cardName = 'Nome no cartão deve ter pelo menos 3 caracteres';
+        }
+        break;
+      case 'cardExpiry':
+        if (paymentMethod === 'card') {
+          const expiryValidation = validateCardExpiry(value);
+          if (!expiryValidation.valid) {
+            newErrors.cardExpiry = expiryValidation.message;
+          }
+        }
+        break;
+      case 'cardCvv':
+        if (paymentMethod === 'card') {
+          const cvvValidation = validateCardCVV(value, cardBrand);
+          if (!cvvValidation.valid) {
+            newErrors.cardCvv = cvvValidation.message;
+          }
+        }
+        break;
+      case 'cep':
+        if (value) {
+          const cepValidation = validateCEP(value);
+          if (!cepValidation.valid) {
+            newErrors.cep = cepValidation.message;
+          }
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+  };
+
   const validate = () => {
     const newErrors = {};
 
@@ -178,11 +235,8 @@ export default function Checkout() {
 
     setErrors(newErrors);
 
-    // Show modal if there are errors
-    const errorMessages = Object.values(newErrors);
-    if (errorMessages.length > 0) {
-      setErrorList(errorMessages);
-      setShowErrorModal(true);
+    if (Object.keys(newErrors).length > 0) {
+      showError('Por favor, corrija os campos destacados');
 
       // Scroll to first error and focus
       const firstErrorField = Object.keys(newErrors)[0];
@@ -243,6 +297,9 @@ export default function Checkout() {
     <Layout>
       <div className="checkout-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="checkout-title">Finalizar Compra</h1>
 
           <div className="checkout-content">
@@ -448,13 +505,6 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-
-      <ErrorModal
-        isOpen={showErrorModal}
-        errors={errorList}
-        onClose={() => setShowErrorModal(false)}
-        title="Corrija os erros abaixo"
-      />
     </Layout>
   );
 }

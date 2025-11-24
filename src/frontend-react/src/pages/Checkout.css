@@ -2,6 +2,24 @@
   padding: var(--spacing-xl) 0;
 }
 
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-bottom: var(--spacing-md);
+  transition: background 0.3s;
+}
+
+.back-button:hover {
+  background: var(--bg-hover);
+}
+
 .checkout-title {
   font-size: 2rem;
   margin-bottom: var(--spacing-xl);

@@ -38,6 +38,28 @@ export default function Login() {
     }
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const newErrors = { ...errors };
+
+    if (name === 'email') {
+      if (!value) {
+        newErrors.email = 'Email é obrigatório';
+      } else {
+        const emailValidation = validateEmail(value);
+        if (!emailValidation.valid) {
+          newErrors.email = emailValidation.message;
+        }
+      }
+    } else if (name === 'password') {
+      if (!value) {
+        newErrors.password = 'Senha é obrigatória';
+      }
+    }
+
+    setErrors(newErrors);
+  };
+
   const validate = () => {
     const newErrors = {};
 

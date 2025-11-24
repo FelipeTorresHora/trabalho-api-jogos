@@ -5,8 +5,8 @@ import Button from '../components/ui/Button';
 import { useToast } from '../hooks/useToast';
 import { useCategory } from '../hooks/useCategory';
 import { useCompany } from '../hooks/useCompany';
-import { UserAPI } from '../services/api';
-import { formatCurrency, getGameImage } from '../utils/helpers';
+import { UserAPI, SaleAPI, CartAPI } from '../services/api';
+import { formatCurrency, formatDateTime, getGameImage } from '../utils/helpers';
 import './MyGames.css';
 
 export default function MyGames() {
@@ -25,12 +25,54 @@ export default function MyGames() {
   const loadMyGames = async () => {
     setIsLoading(true);
     try {
-      const result = await UserAPI.getMyGames();
+      // Carregar jogos, vendas e carrinhos em paralelo
+      const [gamesResult, salesResult, cartsResult] = await Promise.all([
+        UserAPI.getMyGames(),
+        SaleAPI.getAll(),
+        CartAPI.getAll()
+      ]);
 
-      if (result.success && result.data) {
+      if (gamesResult.success && gamesResult.data) {
         // Filtrar apenas jogos com chave de ativação (comprados)
-        const purchasedGames = result.data.filter(item => item.chaveAtivacao !== null && item.chaveAtivacao !== undefined);
-        setGames(purchasedGames);
+        const purchasedGames = gamesResult.data.filter(item =>
+          item.chaveAtivacao !== null && item.chaveAtivacao !== undefined
+        );
+
+        // Obter carrinhos finalizados
+        const finalizedCarts = cartsResult.success && cartsResult.data?.carrinhosComItens
+          ? cartsResult.data.carrinhosComItens.filter(c => c.status === 'F')
+          : [];
+
+        // Obter vendas
+        const sales = salesResult.success && salesResult.data ? salesResult.data : [];
+
+        // Enriquecer jogos com dados de compra
+        const gamesWithPurchaseData = purchasedGames.map(game => {
+          // Encontrar o carrinho que contém este jogo
+          const cart = finalizedCarts.find(c =>
+            c.itens?.some(item => item.fkJogo === game.jogo.id)
+          );
+
+          if (cart && cart.fkVenda) {
+            // Encontrar a venda correspondente
+            const sale = sales.find(s => s.id === cart.fkVenda);
+
+            if (sale) {
+              return {
+                ...game,
+                purchaseData: {
+                  orderId: sale.id,
+                  date: sale.data,
+                  totalValue: sale.valor_total
+                }
+              };
+            }
+          }
+
+          return game;
+        });
+
+        setGames(gamesWithPurchaseData);
       } else {
         showError('Erro ao carregar seus jogos');
       }
@@ -82,6 +124,9 @@ export default function MyGames() {
     <Layout>
       <div className="my-games-page">
         <div className="container">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← Voltar
+          </button>
           <h1 className="page-title">Minha Biblioteca</h1>
           <p className="games-count">
             {games.length} {games.length === 1 ? 'jogo' : 'jogos'} na sua biblioteca
@@ -137,6 +182,23 @@ export default function MyGames() {
                         </button>
                       </div>
                     </div>
+
+                    {item.purchaseData && (
+                      <div className="purchase-info">
+                        <div className="purchase-info-item">
+                          <span className="purchase-label">Data da Compra:</span>
+                          <span className="purchase-value">{formatDateTime(item.purchaseData.date)}</span>
+                        </div>
+                        <div className="purchase-info-item">
+                          <span className="purchase-label">Pedido:</span>
+                          <span className="purchase-value">#{item.purchaseData.orderId}</span>
+                        </div>
+                        <div className="purchase-info-item">
+                          <span className="purchase-label">Valor Pago:</span>
+                          <span className="purchase-value">{formatCurrency(item.purchaseData.totalValue)}</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="game-actions">
                       <Button
