@@ -83,7 +83,7 @@ function Header({ onSearch }) {
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchChange}
-                placeholder="Buscar jogos..."
+                placeholder="Busca de Jogo e Empresa"
               />
             </div>
           )}

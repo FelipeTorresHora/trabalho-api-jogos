@@ -33,8 +33,10 @@ export default function Admin() {
   // Modals
   const [showGameModal, setShowGameModal] = useState(false);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   const [editingGame, setEditingGame] = useState(null);
   const [editingCompany, setEditingCompany] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
 
   // Confirm Dialogs
   const [showDeleteGameDialog, setShowDeleteGameDialog] = useState(false);
@@ -80,6 +82,16 @@ export default function Admin() {
     nome: ''
   });
 
+  const [userFormData, setUserFormData] = useState({
+    nome: '',
+    fkPerfil: 2
+  });
+
+  // Helper function to get profile name from ID
+  const getProfileName = (fkPerfil) => {
+    return fkPerfil === 1 ? 'Administrador' : 'Cliente';
+  };
+
   useEffect(() => {
     loadAllData();
   }, []);
@@ -100,27 +112,15 @@ export default function Admin() {
 
   const loadUsers = async () => {
     try {
-      // Get all sales to extract user IDs
-      const salesResult = await SaleAPI.getAll();
-      if (!salesResult.success) return;
-
-      const userIds = new Set();
-      salesResult.data.forEach(venda => {
-        const userId = venda.fk_usuario || venda.fkUsuario;
-        if (userId) userIds.add(userId);
-      });
-
-      // Fetch each user
-      const userPromises = Array.from(userIds).map(id => UserAPI.getById(id));
-      const userResults = await Promise.all(userPromises);
-
-      const validUsers = userResults
-        .filter(result => result.success && result.data)
-        .map(result => result.data);
-
-      setUsers(validUsers);
+      const result = await UserAPI.getAll();
+      if (result.success && result.data) {
+        setUsers(result.data);
+      } else {
+        showError('Erro ao carregar usuários');
+      }
     } catch (error) {
       console.error('Error loading users:', error);
+      showError('Erro ao conectar com servidor');
     }
   };
 
@@ -511,6 +511,55 @@ export default function Admin() {
     }
   };
 
+  // User Management
+  const handleOpenUserModal = (user) => {
+    setEditingUser(user);
+    setUserFormData({
+      nome: user.nome,
+      fkPerfil: user.fkPerfil
+    });
+    setShowUserModal(true);
+  };
+
+  const handleSaveUser = async (e) => {
+    e.preventDefault();
+
+    try {
+      const result = await UserAPI.update(editingUser.id, userFormData);
+
+      if (result.success) {
+        showSuccess('Usuário atualizado!');
+        setShowUserModal(false);
+        await loadUsers();
+      } else {
+        showError(result.error || 'Erro ao atualizar usuário');
+      }
+    } catch (error) {
+      showError('Erro ao atualizar usuário');
+    }
+  };
+
+  const handleToggleAdmin = async (user) => {
+    try {
+      const newProfileId = user.fkPerfil === 1 ? 2 : 1;
+      const profileName = newProfileId === 1 ? 'Administrador' : 'Cliente';
+
+      const result = await UserAPI.update(user.id, {
+        nome: user.nome,
+        fkPerfil: newProfileId
+      });
+
+      if (result.success) {
+        showSuccess(`Usuário ${newProfileId === 1 ? 'promovido' : 'despromovido'} para ${profileName}!`);
+        await loadUsers();
+      } else {
+        showError(result.error || 'Erro ao atualizar perfil');
+      }
+    } catch (error) {
+      showError('Erro ao atualizar perfil');
+    }
+  };
+
   const cancelDelete = () => {
     setShowDeleteGameDialog(false);
     setShowDeleteCompanyDialog(false);
@@ -603,6 +652,7 @@ export default function Admin() {
                       <th>Email</th>
                       <th>Telefone</th>
                       <th>Perfil</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -621,8 +671,25 @@ export default function Admin() {
                         <td>{user.telefone || '-'}</td>
                         <td>
                           <span className="role-badge">
-                            {user.perfil === 'Administrador' ? 'Admin' : 'Usuário'}
+                            {user.fkPerfil === 1 ? 'Admin' : 'Usuário'}
                           </span>
+                        </td>
+                        <td>
+                          <div className="table-actions">
+                            <Button
+                              size="small"
+                              onClick={() => handleOpenUserModal(user)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              size="small"
+                              variant={user.fkPerfil === 1 ? "secondary" : "primary"}
+                              onClick={() => handleToggleAdmin(user)}
+                            >
+                              {user.fkPerfil === 1 ? 'Despromover' : 'Promover'}
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -853,6 +920,38 @@ export default function Admin() {
           />
           <div className="modal-actions">
             <Button type="button" variant="secondary" onClick={() => setShowCompanyModal(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit">Salvar</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* User Modal */}
+      <Modal
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        title={editingUser ? 'Editar Usuário' : 'Gerenciar Usuário'}
+      >
+        <form onSubmit={handleSaveUser} className="admin-form">
+          <Input
+            label="Nome"
+            value={userFormData.nome}
+            onChange={(e) => setUserFormData({ ...userFormData, nome: e.target.value })}
+            required
+          />
+          <Select
+            label="Perfil"
+            value={userFormData.fkPerfil}
+            onChange={(e) => setUserFormData({ ...userFormData, fkPerfil: Number(e.target.value) })}
+            options={[
+              { value: 1, label: 'Administrador' },
+              { value: 2, label: 'Cliente' }
+            ]}
+            required
+          />
+          <div className="modal-actions">
+            <Button type="button" variant="secondary" onClick={() => setShowUserModal(false)}>
               Cancelar
             </Button>
             <Button type="submit">Salvar</Button>

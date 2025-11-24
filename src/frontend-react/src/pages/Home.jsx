@@ -121,16 +121,18 @@ export default function Home() {
       );
     }
 
-    // Filter by search term
+    // Filter by search term (game name or company name)
     if (debouncedSearch) {
       const lowerSearch = debouncedSearch.toLowerCase();
-      filtered = filtered.filter(jogo =>
-        (jogo.nome || jogo.titulo || '').toLowerCase().includes(lowerSearch)
-      );
+      filtered = filtered.filter(jogo => {
+        const gameName = (jogo.nome || jogo.titulo || '').toLowerCase();
+        const companyName = getCompanyName(jogo.fkEmpresa).toLowerCase();
+        return gameName.includes(lowerSearch) || companyName.includes(lowerSearch);
+      });
     }
 
     setFilteredGames(filtered);
-  }, [allGames, selectedCategory, debouncedSearch]);
+  }, [allGames, selectedCategory, debouncedSearch, getCompanyName]);
 
   // Sort games
   const sortedGames = useMemo(() => {

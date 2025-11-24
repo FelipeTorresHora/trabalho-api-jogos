@@ -46,7 +46,7 @@ export default function Checkout() {
 
   const [formData, setFormData] = useState({
     email: currentUser?.email || '',
-    phone: currentUser?.telefone || '',
+    phone: '',
     cardNumber: '',
     cardName: currentUser?.nome || '',
     cardExpiry: '',

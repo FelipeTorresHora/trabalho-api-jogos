@@ -28,7 +28,9 @@ export default function MyGames() {
       const result = await UserAPI.getMyGames();
 
       if (result.success && result.data) {
-        setGames(result.data);
+        // Filtrar apenas jogos com chave de ativação (comprados)
+        const purchasedGames = result.data.filter(item => item.chaveAtivacao !== null && item.chaveAtivacao !== undefined);
+        setGames(purchasedGames);
       } else {
         showError('Erro ao carregar seus jogos');
       }
