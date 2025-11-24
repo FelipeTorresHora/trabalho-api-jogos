@@ -30,7 +30,7 @@ import './Checkout.css';
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
   const { getCategoryName } = useCategory();
   const { getCompanyName } = useCompany();
   const { showSuccess, showError } = useToast();
@@ -45,10 +45,10 @@ export default function Checkout() {
   const [errorList, setErrorList] = useState([]);
 
   const [formData, setFormData] = useState({
-    email: user?.email || '',
-    phone: user?.telefone || '',
+    email: currentUser?.email || '',
+    phone: currentUser?.telefone || '',
     cardNumber: '',
-    cardName: '',
+    cardName: currentUser?.nome || '',
     cardExpiry: '',
     cardCvv: '',
     cep: '',
@@ -183,6 +183,16 @@ export default function Checkout() {
     if (errorMessages.length > 0) {
       setErrorList(errorMessages);
       setShowErrorModal(true);
+
+      // Scroll to first error and focus
+      const firstErrorField = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const element = document.querySelector(`[name="${firstErrorField}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+      }, 100);
     }
 
     return Object.keys(newErrors).length === 0;

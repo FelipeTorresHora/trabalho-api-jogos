@@ -254,7 +254,7 @@ export default function Home() {
                         Ver Detalhes
                       </Button>
                       <Button variant="secondary" onClick={() => handleAddToCart(jogo.id)}>
-                        Adicionar ao Carrinho
+                        Comprar
                       </Button>
                     </div>
                   </div>
