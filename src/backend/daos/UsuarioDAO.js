@@ -1,5 +1,6 @@
 const dbService = require('../services/DatabaseService');
 const Usuario = require("../models/Usuario");
+const UsuarioDTO = require("../dtos/UsuarioDTO");
 
 class UsuarioDAO {
 
@@ -7,10 +8,7 @@ class UsuarioDAO {
     const sql = 'SELECT * FROM usuarios WHERE id = ?';
     const row = await dbService.get(sql, [id]);
     if (!row) return null;
-    let usuario = new Usuario(row.nome, row.email, row.senha, row.data_nascimento, row.fk_perfil);
-    usuario.id = row.id;
-    delete usuario.senha; // Nunca retornar a senha
-    return usuario;
+    return new UsuarioDTO(row.id, row.nome, row.email, row.data_nascimento, row.fk_perfil);
   }
 
   async getWithPasswd(id) {
@@ -31,7 +29,7 @@ class UsuarioDAO {
   async all() {
     const sql = 'SELECT * FROM usuarios';
     const rows = await dbService.all(sql);
-    return rows;
+    return rows.map(row => new UsuarioDTO(row.id, row.nome, row.email, row.data_nascimento, row.fk_perfil));
   }
 
   async updatePassword(id, password) {
@@ -47,6 +45,7 @@ class UsuarioDAO {
   }
 
   async create(usuario) {
+    console.log(usuario);
     const sql = 'INSERT INTO usuarios (nome, email, senha, fk_perfil, data_nascimento) VALUES (?, ?, ?, ?, ?)';
     const params = [usuario.nome, usuario.email, usuario.senha, usuario.fkPerfil, usuario.dataNascimento];
     const result = await dbService.run(sql, params);
@@ -54,8 +53,8 @@ class UsuarioDAO {
   }
 
   async update(id, usuario) {
-    const sql = 'UPDATE usuarios SET nome = ?, email = ?, senha = ?, fk_perfil = ? WHERE id = ?';
-    const params = [usuario.nome, usuario.email, usuario.senha, usuario.fkPerfil, id];
+    const sql = 'UPDATE usuarios SET nome = ?, data_nascimento = ?, fk_perfil = ? WHERE id = ?';
+    const params = [usuario.nome, usuario.dataNascimento, usuario.fkPerfil, id];
     const result = await dbService.run(sql, params);
     return { changes: result.changes };
   }
