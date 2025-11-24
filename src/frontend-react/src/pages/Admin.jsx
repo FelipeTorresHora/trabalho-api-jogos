@@ -42,6 +42,8 @@ export default function Admin() {
   const [showDeleteGameDialog, setShowDeleteGameDialog] = useState(false);
   const [showDeleteCompanyDialog, setShowDeleteCompanyDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [showCompanyErrorDialog, setShowCompanyErrorDialog] = useState(false);
+  const [companyError, setCompanyError] = useState({ companyName: '', gameCount: 0 });
 
   // Pagination
   const [usersPage, setUsersPage] = useState(1);
@@ -485,6 +487,15 @@ export default function Admin() {
   };
 
   const handleDeleteCompany = (company) => {
+    // Verificar se empresa possui jogos cadastrados
+    const gamesWithCompany = games.filter(game => game.fkEmpresa === company.id);
+
+    if (gamesWithCompany.length > 0) {
+      setCompanyError({ companyName: company.nome, gameCount: gamesWithCompany.length });
+      setShowCompanyErrorDialog(true);
+      return;
+    }
+
     setItemToDelete({ type: 'company', id: company.id, name: company.nome });
     setShowDeleteCompanyDialog(true);
   };
@@ -550,7 +561,7 @@ export default function Admin() {
       });
 
       if (result.success) {
-        showSuccess(`Usuário ${newProfileId === 1 ? 'promovido' : 'despromovido'} para ${profileName}!`);
+        showSuccess(`Usuário ${newProfileId === 1 ? 'promovido' : 'rebaixado'} para ${profileName}!`);
         await loadUsers();
       } else {
         showError(result.error || 'Erro ao atualizar perfil');
@@ -690,7 +701,7 @@ export default function Admin() {
                               variant={user.fkPerfil === 1 ? "secondary" : "primary"}
                               onClick={() => handleToggleAdmin(user)}
                             >
-                              {user.fkPerfil === 1 ? 'Despromover' : 'Promover'}
+                              {user.fkPerfil === 1 ? 'Rebaixar Cargo' : 'Promover'}
                             </Button>
                           </div>
                         </td>
@@ -984,6 +995,18 @@ export default function Admin() {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Diálogo de Erro - Empresa com Jogos */}
+      <ConfirmDialog
+        isOpen={showCompanyErrorDialog}
+        onConfirm={() => setShowCompanyErrorDialog(false)}
+        onCancel={() => setShowCompanyErrorDialog(false)}
+        title="Não é Possível Excluir Empresa"
+        message={`A empresa "${companyError.companyName}" possui ${companyError.gameCount} jogo(s) cadastrado(s). Para excluir esta empresa, primeiro remova ou reatribua os jogos associados.`}
+        confirmText="Entendi"
+        cancelText="Fechar"
+        type="warning"
       />
     </Layout>
   );

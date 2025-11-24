@@ -56,6 +56,29 @@
   text-decoration: underline;
 }
 
+.back-button-login {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+}
+
+.back-button-login:hover {
+  transform: scale(1.1);
+  background: var(--bg-hover);
+}
+
 .theme-toggle-login {
   position: absolute;
   top: var(--spacing-md);

@@ -1,0 +1,217 @@
+/* Public Header */
+.public-header {
+  background-color: var(--bg-primary);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.public-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
+}
+
+.public-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: var(--spacing-xl);
+}
+
+.nav-left {
+  display: flex;
+  gap: var(--spacing-xl);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Theme Toggle Container */
+.theme-toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Theme Toggle Switch */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 64px;
+  height: 36px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--color-accent);
+  border-radius: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-accent-hover);
+}
+
+/* Hide checkbox */
+.theme-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Theme Options (Emojis) */
+.theme-option {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.theme-option.light-mode {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+.theme-option.dark-mode {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+/* Slider */
+.theme-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Checked State */
+.theme-toggle input[type="checkbox"]:checked ~ .theme-slider {
+  transform: translateX(28px);
+}
+
+.theme-toggle input[type="checkbox"]:checked ~ .theme-option.light-mode {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.theme-toggle input[type="checkbox"]:checked ~ .theme-option.dark-mode {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+/* Focus State */
+.theme-toggle input[type="checkbox"]:focus + .theme-slider {
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .public-nav {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--bg-surface);
+    flex-direction: column;
+    padding: var(--spacing-lg);
+    gap: var(--spacing-lg);
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .public-nav.mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .nav-left,
+  .nav-right {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--spacing-md);
+  }
+
+  .nav-link {
+    width: 100%;
+    padding: var(--spacing-sm);
+    text-align: center;
+  }
+
+  .login-btn,
+  .register-btn {
+    width: 100%;
+  }
+
+  /* Mobile Theme Toggle */
+  .theme-toggle {
+    width: 56px;
+    height: 32px;
+  }
+
+  .theme-option {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .theme-slider {
+    width: 24px;
+    height: 24px;
+  }
+
+  .theme-toggle input[type="checkbox"]:checked ~ .theme-slider {
+    transform: translateX(24px);
+  }
+}

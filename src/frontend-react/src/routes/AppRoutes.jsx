@@ -3,6 +3,7 @@ import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 
 // Pages (will be created)
+import Landing from '../pages/Landing';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Home from '../pages/Home';
@@ -20,7 +21,8 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         {/* Protected routes */}

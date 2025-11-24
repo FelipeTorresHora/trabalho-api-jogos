@@ -133,6 +133,10 @@
 }
 
 .game-image {
+  width: 40px;
+  height: 40px;
+  max-width: 40px;
+  max-height: 40px;
   border-radius: var(--radius-sm);
 }
 
@@ -146,7 +150,7 @@
 
 .action-buttons {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .admin-form {

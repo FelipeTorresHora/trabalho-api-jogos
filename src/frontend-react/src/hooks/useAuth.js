@@ -32,7 +32,7 @@ export function useAuth() {
 
   const logout = () => {
     logoutStore();
-    navigate('/');
+    navigate('/login');
   };
 
   return {

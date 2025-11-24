@@ -114,6 +114,14 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-container">
+        <button
+          className="back-button-login"
+          onClick={() => navigate('/')}
+          aria-label="Voltar para página inicial"
+        >
+          ←
+        </button>
+
         <div className="login-header">
           <h1>Aventurem</h1>
           <p>Entre na sua conta</p>
